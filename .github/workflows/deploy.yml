@@ -1,0 +1,30 @@
+name: Deploy Engine
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  repository_dispatch:
+    types: [manual-deploy]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+
+      - name: Deploy to Firebase
+        run: npx firebase-tools deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
