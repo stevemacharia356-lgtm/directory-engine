@@ -1,0 +1,27 @@
+---
+import type { Blog } from '../lib/firestore';
+
+interface Props {
+  blog: Blog;
+  listingSlug: string;
+  listingName: string;
+}
+
+const { blog, listingSlug, listingName } = Astro.props;
+---
+
+<article id={blog.slug} style="border-top:2px solid #e0e0e0; padding-top:2rem; margin:2rem 0;">
+  <h2>{blog.title}</h2>
+  <p style="font-style:italic; color:#666;">{blog.excerpt}</p>
+  <time datetime={blog.lastModified} style="font-size:0.85rem; color:#999;">
+    Last updated: {blog.lastModified}
+  </time>
+  
+  <div style="margin-top:1rem;">
+    <Fragment set:html={blog.bodyHtml || ''} />
+  </div>
+  
+  <a href={`#${listingSlug}`} style="display:inline-block; margin-top:1rem; font-weight:bold;">
+    ← Back to {listingName} details, photos & contact
+  </a>
+</article>

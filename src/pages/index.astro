@@ -1,17 +1,48 @@
 ---
+import { getAllDirectorySlugs, getDirectoryData } from '../lib/firestore';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 
+const slugs = await getAllDirectorySlugs();
+
+const directories = [];
+const limit = 10;
+for (let i = 0; i < slugs.length; i += limit) {
+  const batch = slugs.slice(i, i + limit);
+  const results = await Promise.all(batch.map(slug => getDirectoryData(slug)));
+  directories.push(...results.filter(Boolean));
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="Kenya Accommodation Directory — Find Guesthouses, Apartments, Hotels & More"
+  description="Comprehensive directory of accommodations across Kenya. Honest reviews, photos, prices, and contact details."
+>
+  <Header breadcrumbs={[{ label: 'Home' }]} />
+  
+  <main>
+    <h1>Kenya Accommodation Directory</h1>
+    <p>Honest reviews and detailed information about accommodations and businesses across Kenya. Click a location to compare options, see photos, and get contact details.</p>
+    
+    {directories.length === 0 ? (
+      <p>No locations available yet. Check back soon.</p>
+    ) : (
+      <ul style="list-style:none; padding:0; display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));">
+        {directories.map(dir => (
+          <li style="border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">
+            <a href={`/${dir!.directory}/`} style="text-decoration:none; color:inherit; display:block;">
+              <img src={dir!.heroImage} alt={dir!.heroImageAlt} width="400" height="200" loading="lazy" style="width:100%; height:200px; object-fit:cover;" />
+              <div style="padding:1rem;">
+                <h2 style="font-size:1.2rem; margin:0;">{dir!.nicheDisplay} in {dir!.locationDisplay}</h2>
+                <p style="margin:0.5rem 0 0; color:#666;">{dir!.listings.length} places reviewed</p>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+
+  <Footer />
+</BaseLayout>

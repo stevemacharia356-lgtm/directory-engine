@@ -1,0 +1,15 @@
+---
+import type { Faq } from '../lib/firestore';
+
+const { faqs = [] } = Astro.props as { faqs: Faq[] };
+---
+
+<div style="margin:1rem 0;">
+  <h3>Questions About This Property</h3>
+  {faqs.map(faq => (
+    <details>
+      <summary>{faq.question}</summary>
+      <p style="padding:0.5rem 1rem;">{faq.answer}</p>
+    </details>
+  ))}
+</div>

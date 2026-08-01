@@ -1,0 +1,19 @@
+---
+interface Props {
+  number: string;
+  message: string;
+}
+
+const { number, message } = Astro.props;
+const cleanNumber = number.replace(/\+/g, '');
+const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+---
+
+<a 
+  href={url} 
+  target="_blank" 
+  rel="noopener nofollow"
+  style="display:inline-block; background:#25D366; color:white; padding:0.75rem 1.5rem; border-radius:4px; text-decoration:none; font-weight:bold;"
+>
+  💬 WhatsApp
+</a>

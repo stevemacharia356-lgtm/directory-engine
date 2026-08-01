@@ -1,0 +1,156 @@
+---
+import { getDirectoryData, getAllDirectorySlugs } from '../../lib/firestore';
+import { getDirectoryConfig } from '../../lib/registry';
+import {
+  generateLocalBusinessSchema,
+  generateHotelSchema,
+  generateApartmentSchema,
+  generateSchoolSchema,
+  generateMedicalSchema,
+  generateArticleSchema,
+  generateFAQPageSchema,
+  generateItemListSchema
+} from '../../lib/schema';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import LocationIntro from '../../components/LocationIntro.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import BlogArticle from '../../components/BlogArticle.astro';
+import GlobalFaq from '../../components/GlobalFaq.astro';
+import GuesthouseListing from '../../components/niches/GuesthouseListing.astro';
+import HotelListing from '../../components/niches/HotelListing.astro';
+import ApartmentListing from '../../components/niches/ApartmentListing.astro';
+import SchoolListing from '../../components/niches/SchoolListing.astro';
+import HealthListing from '../../components/niches/HealthListing.astro';
+
+export async function getStaticPaths() {
+  const slugs = await getAllDirectorySlugs();
+  
+  const paths = [];
+  const limit = 10;
+  for (let i = 0; i < slugs.length; i += limit) {
+    const batch = slugs.slice(i, i + limit);
+    const results = await Promise.all(batch.map(slug => getDirectoryData(slug)));
+    for (let j = 0; j < results.length; j++) {
+      const data = results[j];
+      if (data) {
+        paths.push({ params: { directory: slugs[i + j] }, props: { directoryData: data } });
+      }
+    }
+  }
+  
+  return paths;
+}
+
+const { directoryData } = Astro.props;
+const { nicheSlug, listings, locationDisplay, nicheDisplay } = directoryData;
+const config = getDirectoryConfig(directoryData.directory);
+
+const geoCoords = listings[0]?.coordinates;
+const geoPlacename = `${locationDisplay}, Kenya`;
+
+const tocSections = [
+  { id: 'compare', label: `Compare ${nicheDisplay}` },
+  ...listings.map((l: any) => ({ id: l.slug, label: l.name })),
+  { id: 'reviews', label: 'Detailed Reviews' },
+  ...listings.map((l: any) => ({ id: l.blog?.slug || '', label: l.blog?.title || '' })).filter((s: any) => s.id),
+  { id: 'faq', label: 'Frequently Asked Questions' }
+];
+
+const pageTitle = `${nicheDisplay} in ${locationDisplay} — Compare All ${listings.length} Options`;
+const pageDescription = `Compare all ${listings.length} ${nicheDisplay.toLowerCase()} in ${locationDisplay}. Photos, prices, amenities, directions, WhatsApp contacts, and honest reviews.`;
+
+const schemas: any[] = [];
+listings.forEach((listing: any) => {
+  if (nicheSlug === 'guesthouse') schemas.push(generateLocalBusinessSchema(listing, directoryData.directory));
+  else if (nicheSlug === 'hotel') schemas.push(generateHotelSchema(listing, directoryData.directory));
+  else if (nicheSlug === 'apartment') schemas.push(generateApartmentSchema(listing, directoryData.directory));
+  else if (nicheSlug === 'school') schemas.push(generateSchoolSchema(listing, directoryData.directory));
+  else if (nicheSlug === 'health') schemas.push(generateMedicalSchema(listing, directoryData.directory));
+  
+  if (listing.blog?.title) {
+    schemas.push(generateArticleSchema(listing, `${Astro.url.origin}/${directoryData.directory}/`));
+  }
+});
+
+if (directoryData.globalFaqs?.length) {
+  schemas.push(generateFAQPageSchema(directoryData.globalFaqs));
+}
+
+schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${directoryData.directory}/`));
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  ogImage={directoryData.heroImage}
+  canonicalURL={`${Astro.url.origin}/${directoryData.directory}/`}
+  lastModified={directoryData.lastModified}
+  geoCoordinates={geoCoords}
+  geoPlacename={geoPlacename}
+>
+  <slot name="head">
+    {schemas.map((schema: any) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+  </slot>
+
+  <Header 
+    breadcrumbs={[
+      { label: 'Home', url: '/' },
+      { label: `${nicheDisplay} in ${locationDisplay}` }
+    ]} 
+  />
+
+  <main>
+    <LocationIntro 
+      nicheDisplay={nicheDisplay}
+      locationDisplay={locationDisplay}
+      description={directoryData.locationDescription}
+      heroImage={directoryData.heroImage}
+      heroImageAlt={directoryData.heroImageAlt}
+    />
+
+    <TableOfContents sections={tocSections} />
+
+    <section id="compare">
+      <h2>Compare {nicheDisplay} in {locationDisplay}</h2>
+      <p>Click "See Details & Contact" on any listing to view amenities, phone numbers, WhatsApp, written directions, and a map.</p>
+      
+      {nicheSlug === 'guesthouse' && listings.map((l: any, idx: number) => (
+        <GuesthouseListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
+      ))}
+      {nicheSlug === 'hotel' && listings.map((l: any, idx: number) => (
+        <HotelListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
+      ))}
+      {nicheSlug === 'apartment' && listings.map((l: any, idx: number) => (
+        <ApartmentListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
+      ))}
+      {nicheSlug === 'school' && listings.map((l: any, idx: number) => (
+        <SchoolListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
+      ))}
+      {nicheSlug === 'health' && listings.map((l: any, idx: number) => (
+        <HealthListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
+      ))}
+    </section>
+
+    <section id="reviews">
+      <h2>Detailed Reviews of {nicheDisplay} in {locationDisplay}</h2>
+      
+      {listings.map((listing: any) => (
+        listing.blog?.title ? (
+          <BlogArticle 
+            blog={listing.blog}
+            listingSlug={listing.slug}
+            listingName={listing.name}
+          />
+        ) : null
+      ))}
+    </section>
+
+    {directoryData.globalFaqs?.length > 0 && <GlobalFaq faqs={directoryData.globalFaqs} />}
+  </main>
+
+  <Footer />
+</BaseLayout>

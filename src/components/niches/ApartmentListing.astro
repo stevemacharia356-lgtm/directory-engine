@@ -1,0 +1,64 @@
+---
+import type { Listing } from '../../lib/firestore';
+import PhoneButton from '../PhoneButton.astro';
+import WhatsAppButton from '../WhatsAppButton.astro';
+import WrittenDirections from '../WrittenDirections.astro';
+import MapFacade from '../MapFacade.astro';
+import ListingFaqs from '../ListingFaqs.astro';
+
+interface Props {
+  listing: Listing;
+  reviewAnchorId: string;
+  index: number;
+}
+
+const { listing, reviewAnchorId, index } = Astro.props;
+const niche = listing.nicheSpecific as any;
+const amenities = niche?.amenities || [];
+---
+
+<section id={listing.slug} style="border:1px solid #e0e0e0; border-radius:8px; padding:1rem; margin:1.5rem 0;">
+  <img 
+    src={listing.thumbnail} 
+    alt={listing.thumbnailAlt}
+    width="400"
+    height="300"
+    loading={index === 0 ? 'eager' : 'lazy'}
+    decoding="async"
+    style="border-radius:4px;"
+  />
+  <h2>{index + 1}. {listing.name}</h2>
+  <p style="font-weight:bold; font-size:1.2rem; color:#2a7f2a;">KSh {listing.priceNumeric.toLocaleString('en-KE')}/month</p>
+  <p>{listing.summary}</p>
+
+  <details style="margin-top:1rem;">
+    <summary style="background:#0066cc; color:white; padding:0.75rem 1rem; border-radius:4px; display:inline-block; cursor:pointer;">
+      See Details & Contact
+    </summary>
+
+    <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+      {niche?.apartmentType && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🏠 {niche.apartmentType}</span>}
+      {niche?.furnished != null && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🛏️ {niche.furnished ? 'Furnished' : 'Unfurnished'}</span>}
+      {amenities.includes('WiFi') && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">📶 WiFi</span>}
+      {amenities.includes('Water Included') && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🚰 Water Incl.</span>}
+      {amenities.includes('Electricity Included') && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">⚡ Electricity Incl.</span>}
+      {amenities.includes('Secure Parking') && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🚗 Parking</span>}
+      {(amenities.includes('Security Guard') || amenities.includes('CCTV') || amenities.includes('Gated Compound')) && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🔒 Secure</span>}
+      {amenities.includes('Kitchen') && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🍳 Kitchen</span>}
+      {niche?.monthlyRent != null && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">💰 KSh {niche.monthlyRent.toLocaleString('en-KE')}/mo</span>}
+    </div>
+
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin:1rem 0;">
+      <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
+      <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
+    </div>
+
+    <WrittenDirections directions={listing.directions} />
+    <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
+    <ListingFaqs faqs={listing.faqs} />
+
+    <a href={`#${reviewAnchorId}`} style="display:inline-block; margin-top:1rem; font-weight:bold;">
+      📝 Read our full review of {listing.name} ↓
+    </a>
+  </details>
+</section>

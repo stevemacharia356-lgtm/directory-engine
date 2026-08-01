@@ -1,0 +1,35 @@
+---
+export interface Props {
+  breadcrumbs: Array<{ label: string; url?: string }>;
+}
+
+const { breadcrumbs } = Astro.props;
+---
+
+<header>
+  <nav aria-label="Breadcrumb">
+    <ol style="display:flex; gap:0.5rem; list-style:none; padding:1rem 0; font-size:0.9rem;">
+      {breadcrumbs.map((crumb, i) => (
+        <li>
+          {crumb.url ? <a href={crumb.url}>{crumb.label}</a> : <span>{crumb.label}</span>}
+          {i < breadcrumbs.length - 1 && <span aria-hidden="true"> / </span>}
+        </li>
+      ))}
+    </ol>
+  </nav>
+</header>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {breadcrumbs.filter(c => c.url).map((crumb, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": crumb.label,
+        "item": `https://mymaindomain.co.ke${crumb.url}`
+      })).join(',')}
+    ]
+  }
+</script>

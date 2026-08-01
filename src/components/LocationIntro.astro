@@ -1,0 +1,25 @@
+---
+interface Props {
+  nicheDisplay: string;
+  locationDisplay: string;
+  description: string;
+  heroImage: string;
+  heroImageAlt: string;
+}
+
+const { nicheDisplay, locationDisplay, description, heroImage, heroImageAlt } = Astro.props;
+---
+
+<section>
+  <h1>{nicheDisplay} in {locationDisplay} — Complete Guide</h1>
+  <img 
+    src={heroImage} 
+    alt={heroImageAlt}
+    width="1200"
+    height="600"
+    loading="eager"
+    decoding="async"
+    style="border-radius:8px; margin:1rem 0;"
+  />
+  <p style="font-size:1.1rem;">{description}</p>
+</section>

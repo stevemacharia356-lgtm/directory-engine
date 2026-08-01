@@ -8,11 +8,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "postbuild": "node scripts/check-build.js",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.1.6"
+    "astro": "^7.1.6",
+    "firebase-admin": "^13.0.0",
+    "marked": "^15.0.0",
+    "p-limit": "^6.0.0"
   }
 }

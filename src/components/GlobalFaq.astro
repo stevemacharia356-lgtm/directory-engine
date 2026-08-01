@@ -1,0 +1,15 @@
+---
+import type { Faq } from '../lib/firestore';
+
+const { faqs = [] } = Astro.props as { faqs: Faq[] };
+---
+
+<section id="faq" style="border-top:2px solid #e0e0e0; padding-top:2rem;">
+  <h2>Frequently Asked Questions</h2>
+  {faqs.map(faq => (
+    <details>
+      <summary>{faq.question}</summary>
+      <p style="padding:0.5rem 1rem;">{faq.answer}</p>
+    </details>
+  ))}
+</section>

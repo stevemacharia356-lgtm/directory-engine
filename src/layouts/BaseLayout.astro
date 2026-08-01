@@ -1,0 +1,66 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  canonicalURL?: string;
+  lastModified?: string;
+  geoCoordinates?: { lat: number; lng: number };
+  geoPlacename?: string;
+}
+
+const { title, description, ogImage, canonicalURL, lastModified, geoCoordinates, geoPlacename } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  
+  <link rel="canonical" href={canonicalURL || Astro.url.href} />
+  {lastModified && <meta property="article:modified_time" content={lastModified} />}
+  
+  {geoCoordinates && (
+    <>
+      <meta name="geo.position" content={`${geoCoordinates.lat};${geoCoordinates.lng}`} />
+      <meta name="geo.region" content="KE" />
+    </>
+  )}
+  {geoPlacename && <meta name="geo.placename" content={geoPlacename} />}
+  
+  <slot name="head" />
+  
+  <style is:global>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.7;
+      color: #1a1a1a;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    a { color: #0066cc; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; margin: 1.5rem 0 0.5rem; }
+    h3 { font-size: 1.2rem; margin: 1rem 0 0.5rem; }
+    section { margin: 2rem 0; }
+    details { margin: 0.5rem 0; padding: 0.5rem; border: 1px solid #e0e0e0; border-radius: 4px; }
+    summary { cursor: pointer; font-weight: 600; padding: 0.5rem; }
+    details[open] summary { border-bottom: 1px solid #e0e0e0; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <slot />
+</body>
+</html>

@@ -1,0 +1,55 @@
+---
+interface Props {
+  lat: number;
+  lng: number;
+  name: string;
+}
+
+const { lat, lng, name } = Astro.props;
+const mapId = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=600x300&markers=color:red%7C${lat},${lng}&key=YOUR_API_KEY`;
+---
+
+<div id={`map-${mapId}`} style="margin:1rem 0; position:relative;">
+  <img 
+    src={staticMapUrl} 
+    alt={`Map showing location of ${name}`}
+    width="600"
+    height="300"
+    loading="lazy"
+    decoding="async"
+    style="border-radius:4px; width:100%;"
+  />
+  <button 
+    type="button"
+    data-lat={lat}
+    data-lng={lng}
+    data-name={name}
+    style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); padding:0.5rem 1rem; background:white; border:2px solid #333; border-radius:4px; cursor:pointer; font-weight:bold;"
+  >
+    🗺️ Load Interactive Map
+  </button>
+</div>
+
+<script>
+  document.querySelectorAll('#map-{mapId} button').forEach(btn => {
+    btn.addEventListener('click', async function(this: HTMLButtonElement) {
+      const lat = parseFloat(this.dataset.lat!);
+      const lng = parseFloat(this.dataset.lng!);
+      const name = this.dataset.name!;
+      const container = this.parentElement!;
+      
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY`;
+      script.onload = () => {
+        const map = new (window as any).google.maps.Map(container, {
+          center: { lat, lng },
+          zoom: 15
+        });
+        new (window as any).google.maps.Marker({ position: { lat, lng }, map, title: name });
+      };
+      document.head.appendChild(script);
+      this.remove();
+    });
+  });
+</script>

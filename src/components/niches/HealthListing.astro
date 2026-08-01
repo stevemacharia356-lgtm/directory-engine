@@ -1,0 +1,61 @@
+---
+import type { Listing } from '../../lib/firestore';
+import PhoneButton from '../PhoneButton.astro';
+import WhatsAppButton from '../WhatsAppButton.astro';
+import WrittenDirections from '../WrittenDirections.astro';
+import MapFacade from '../MapFacade.astro';
+import ListingFaqs from '../ListingFaqs.astro';
+
+interface Props {
+  listing: Listing;
+  reviewAnchorId: string;
+  index: number;
+}
+
+const { listing, reviewAnchorId, index } = Astro.props;
+const niche = listing.nicheSpecific as any;
+const services = niche?.services || [];
+---
+
+<section id={listing.slug} style="border:1px solid #e0e0e0; border-radius:8px; padding:1rem; margin:1.5rem 0;">
+  <img 
+    src={listing.thumbnail} 
+    alt={listing.thumbnailAlt}
+    width="400"
+    height="300"
+    loading={index === 0 ? 'eager' : 'lazy'}
+    decoding="async"
+    style="border-radius:4px;"
+  />
+  <h2>{index + 1}. {listing.name}</h2>
+  <p style="font-weight:bold; font-size:1.2rem; color:#2a7f2a;">KSh {listing.priceNumeric.toLocaleString('en-KE')}</p>
+  <p>{listing.summary}</p>
+
+  <details style="margin-top:1rem;">
+    <summary style="background:#0066cc; color:white; padding:0.75rem 1rem; border-radius:4px; display:inline-block; cursor:pointer;">
+      See Details & Contact
+    </summary>
+
+    <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+      {niche?.facilityType && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🏥 {niche.facilityType}</span>}
+      {niche?.doctorCount != null && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">👨‍⚕️ {niche.doctorCount} Doctors</span>}
+      {services.length > 0 && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🩺 {services.slice(0, 3).join(', ')}{services.length > 3 ? '...' : ''}</span>}
+      {niche?.emergency && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🚑 Emergency</span>}
+      {niche?.visitingHours && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🕐 {niche.visitingHours}</span>}
+      {niche?.insuranceAccepted && <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">🛡️ {niche.insuranceAccepted}</span>}
+    </div>
+
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin:1rem 0;">
+      <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
+      <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
+    </div>
+
+    <WrittenDirections directions={listing.directions} />
+    <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
+    <ListingFaqs faqs={listing.faqs} />
+
+    <a href={`#${reviewAnchorId}`} style="display:inline-block; margin-top:1rem; font-weight:bold;">
+      📝 Read our full review of {listing.name} ↓
+    </a>
+  </details>
+</section>
