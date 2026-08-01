@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+service-account.json 
+service-account-base.txt 
+service-account-base64.txt 
