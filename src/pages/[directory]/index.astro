@@ -142,12 +142,13 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
     <section id="reviews" style="background:#fff8f0; padding:1.5rem; border-radius:8px; border-left:6px solid #ff8c00; margin-bottom:2rem;">
       <h2 style="color:#804000; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #ffe0b3;">📝 Detailed Reviews of {nicheDisplay} in {locationDisplay}</h2>
       
-      {listings.map((listing: any) => (
+      {listings.map((listing: any, idx: number) => (
         listing.blog?.title ? (
           <BlogArticle 
             blog={listing.blog}
             listingSlug={listing.slug}
             listingName={listing.name}
+            index={idx}
           />
         ) : null
       ))}
