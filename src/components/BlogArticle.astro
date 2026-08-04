@@ -13,7 +13,7 @@ const { blog, listingSlug, listingName, index } = Astro.props;
 
 <article id={blog.slug} style="background:white; border:1px solid #e8e0d0; border-radius:8px; padding:1.5rem; margin:1.5rem 0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
   <div style="border-bottom:2px solid #ff8c00; padding-bottom:0.75rem; margin-bottom:1rem;">
-    <h2 style="color:#804000; margin:0 0 0.25rem 0; font-size:1.3rem;">📝 {index + 1}. {blog.title}</h2>
+    <h3 style="color:#804000; margin:0 0 0.25rem 0; font-size:1.3rem;">📝 {index + 1}. {blog.title}</h3>
     <p style="font-style:italic; color:#666; margin:0.25rem 0;">{blog.excerpt}</p>
     <time datetime={blog.lastModified} style="font-size:0.8rem; color:#999;">
       🕐 Last updated: {new Date(blog.lastModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
