@@ -10,18 +10,20 @@ interface Props {
 const { blog, listingSlug, listingName } = Astro.props;
 ---
 
-<article id={blog.slug} style="border-top:2px solid #e0e0e0; padding-top:2rem; margin:2rem 0;">
-  <h2>{blog.title}</h2>
-  <p style="font-style:italic; color:#666;">{blog.excerpt}</p>
-  <time datetime={blog.lastModified} style="font-size:0.85rem; color:#999;">
-    Last updated: {blog.lastModified}
-  </time>
+<article id={blog.slug} style="background:white; border:1px solid #e8e0d0; border-radius:8px; padding:1.5rem; margin:1.5rem 0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+  <div style="border-bottom:2px solid #ff8c00; padding-bottom:0.75rem; margin-bottom:1rem;">
+    <h2 style="color:#804000; margin:0 0 0.25rem 0; font-size:1.3rem;">📝 {blog.title}</h2>
+    <p style="font-style:italic; color:#666; margin:0.25rem 0;">{blog.excerpt}</p>
+    <time datetime={blog.lastModified} style="font-size:0.8rem; color:#999;">
+      🕐 Last updated: {new Date(blog.lastModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </time>
+  </div>
   
-  <div style="margin-top:1rem;">
+  <div style="margin-top:1rem; line-height:1.8;">
     <Fragment set:html={blog.bodyHtml || ''} />
   </div>
   
-  <a href={`#${listingSlug}`} style="display:inline-block; margin-top:1rem; font-weight:bold;">
-    ← Back to {listingName} details, photos & contact
+  <a href={`#${listingSlug}`} style="display:inline-block; margin-top:1.5rem; padding:0.5rem 1rem; background:#f0f0f0; border-radius:4px; text-decoration:none; color:#555; font-weight:600; font-size:0.9rem;">
+    ⬆ Back to {listingName} details, photos & contact
   </a>
 </article>

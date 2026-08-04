@@ -114,9 +114,13 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
 
     <TableOfContents sections={tocSections} />
 
-    <section id="compare">
-      <h2>Compare {nicheDisplay} in {locationDisplay}</h2>
-      <p>Click "See Details & Contact" on any listing to view amenities, phone numbers, WhatsApp, written directions, and a map.</p>
+    <div style="text-align:center; padding:0.5rem; margin:0.5rem 0 1.5rem 0; color:#999; font-size:0.85rem; border-bottom:1px dashed #ddd;">
+      📖 {listings.length} {nicheDisplay.toLowerCase()} reviewed • {directoryData.globalFaqs?.length || 0} FAQs answered
+    </div>
+
+    <section id="compare" style="background:#f0f4ff; padding:1.5rem; border-radius:8px; border-left:6px solid #0066cc; margin-bottom:2rem;">
+      <h2 style="color:#003d80; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #cce0ff;">📍 Compare {nicheDisplay} in {locationDisplay}</h2>
+      <p style="color:#555; margin-bottom:1.5rem;">Click "See Details & Contact" on any listing to view amenities, phone numbers, WhatsApp, written directions, and a map.</p>
       
       {nicheSlug === 'guesthouse' && listings.map((l: any, idx: number) => (
         <GuesthouseListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
@@ -135,8 +139,8 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       ))}
     </section>
 
-    <section id="reviews">
-      <h2>Detailed Reviews of {nicheDisplay} in {locationDisplay}</h2>
+    <section id="reviews" style="background:#fff8f0; padding:1.5rem; border-radius:8px; border-left:6px solid #ff8c00; margin-bottom:2rem;">
+      <h2 style="color:#804000; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #ffe0b3;">📝 Detailed Reviews of {nicheDisplay} in {locationDisplay}</h2>
       
       {listings.map((listing: any) => (
         listing.blog?.title ? (
@@ -149,7 +153,12 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       ))}
     </section>
 
-    {directoryData.globalFaqs?.length > 0 && <GlobalFaq faqs={directoryData.globalFaqs} />}
+    {directoryData.globalFaqs?.length > 0 && (
+      <section style="background:#f5fff5; padding:1.5rem; border-radius:8px; border-left:6px solid #28a745; margin-top:2rem;">
+        <h2 style="color:#1a5c1a; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #cce6cc;">❓ Frequently Asked Questions</h2>
+        <GlobalFaq faqs={directoryData.globalFaqs} />
+      </section>
+    )}
   </main>
 
   <Footer />
