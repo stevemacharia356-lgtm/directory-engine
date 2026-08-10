@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="About Us | Kenya Accommodation Directory"
+  description="Learn about Kenya Accommodation Directory — honest reviews and detailed information about accommodations and businesses across Kenya."
+>
+  <Header breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'About' }]} />
+
+  <main style="padding:2rem 0;">
+    <h1>About Kenya Accommodation Directory</h1>
+    
+    <p>We provide honest, detailed reviews and information about accommodations and businesses across Kenya. Every listing on this site has been personally visited and reviewed by our team.</p>
+    
+    <h2>What We Do</h2>
+    <p>We visit guesthouses, hotels, apartments, schools, and health facilities across Kenya. We take photos, note the amenities, check the prices, and write honest reviews. Our goal is to help Kenyans and travelers make informed decisions about where to stay, study, or seek services.</p>
+    
+    <h2>Why Trust Us</h2>
+    <p>Every listing includes:</p>
+    <ul>
+      <li>Real photos taken on-site</li>
+      <li>Verified phone numbers and WhatsApp contacts</li>
+      <li>Written directions with local landmarks</li>
+      <li>Honest reviews based on actual stays or visits</li>
+      <li>Accurate pricing information</li>
+    </ul>
+    
+    <h2>Contact Us</h2>
+    <p>Have a business you'd like listed? Found incorrect information? We'd love to hear from you. Reach out via WhatsApp or email.</p>
+  </main>
+
+  <Footer />
+</BaseLayout>
