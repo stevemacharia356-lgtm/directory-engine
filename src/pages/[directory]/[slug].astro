@@ -1,0 +1,152 @@
+---
+import { getDirectoryData, getAllDirectorySlugs } from '../../lib/firestore';
+import { getDirectoryConfig } from '../../lib/registry';
+import {
+  generateLocalBusinessSchema,
+  generateHotelSchema,
+  generateApartmentSchema,
+  generateSchoolSchema,
+  generateMedicalSchema,
+  generateArticleSchema
+} from '../../lib/schema';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import PhoneButton from '../../components/PhoneButton.astro';
+import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import WrittenDirections from '../../components/WrittenDirections.astro';
+import MapFacade from '../../components/MapFacade.astro';
+import ListingFaqs from '../../components/ListingFaqs.astro';
+import BlogArticle from '../../components/BlogArticle.astro';
+
+export async function getStaticPaths() {
+  const slugs = await getAllDirectorySlugs();
+  const paths = [];
+  
+  for (const dirSlug of slugs) {
+    const data = await getDirectoryData(dirSlug);
+    if (data && data.listings) {
+      for (const listing of data.listings) {
+        paths.push({
+          params: { directory: dirSlug, slug: listing.slug },
+          props: { directoryData: data, listing: listing }
+        });
+      }
+    }
+  }
+  
+  return paths;
+}
+
+const { directoryData, listing } = Astro.props;
+const config = getDirectoryConfig(directoryData.directory);
+const niche = listing.nicheSpecific as any;
+const amenities = niche?.amenities || niche?.facilities || niche?.services || [];
+
+const pageTitle = `${listing.name} — ${directoryData.nicheDisplay} in ${directoryData.locationDisplay}`;
+const pageDescription = listing.summary;
+
+let schema = null;
+if (directoryData.nicheSlug === 'guesthouse') schema = generateLocalBusinessSchema(listing, directoryData.directory);
+else if (directoryData.nicheSlug === 'hotel') schema = generateHotelSchema(listing, directoryData.directory);
+else if (directoryData.nicheSlug === 'apartment') schema = generateApartmentSchema(listing, directoryData.directory);
+else if (directoryData.nicheSlug === 'school') schema = generateSchoolSchema(listing, directoryData.directory);
+else if (directoryData.nicheSlug === 'health') schema = generateMedicalSchema(listing, directoryData.directory);
+
+const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${Astro.url.origin}/${directoryData.directory}/${listing.slug}/`) : null;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  ogImage={listing.thumbnail}
+  canonicalURL={`${Astro.url.origin}/${directoryData.directory}/${listing.slug}/`}
+  lastModified={listing.lastEditedAt}
+  geoCoordinates={listing.coordinates}
+  geoPlacename={`${directoryData.locationDisplay}, Kenya`}
+>
+  <slot name="head">
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+    {articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+  </slot>
+
+  <Header 
+    breadcrumbs={[
+      { label: 'Home', url: '/' },
+      { label: `${directoryData.nicheDisplay} in ${directoryData.locationDisplay}`, url: `/${directoryData.directory}/` },
+      { label: listing.name }
+    ]} 
+  />
+
+  <main>
+    <section>
+      {listing.thumbnail && (
+        <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading="eager" style="border-radius:8px; margin:1rem 0; width:100%;" />
+      )}
+      
+      <h1>{listing.name}</h1>
+      <p style="font-weight:bold; font-size:1.3rem; color:#2a7f2a;">{listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}</p>
+      <p style="font-size:1.1rem;">{listing.summary}</p>
+    </section>
+
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0;">
+      <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
+      <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
+    </div>
+
+    {amenities.length > 0 && (
+      <section style="background:#f8f8f8; padding:1rem; border-radius:8px; margin:1rem 0;">
+        <h2 style="margin-top:0;">Amenities & Features</h2>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+          {amenities.map((a: string) => (
+            <span style="background:#e8f4e8; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.9rem;">✓ {a}</span>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {niche?.rooms != null && (
+      <section style="background:#f8f8f8; padding:1rem; border-radius:8px; margin:1rem 0;">
+        <h2 style="margin-top:0;">Details</h2>
+        <p><strong>Rooms:</strong> {niche.rooms}</p>
+        {niche?.checkIn && <p><strong>Check-in:</strong> {niche.checkIn}</p>}
+        {niche?.checkOut && <p><strong>Check-out:</strong> {niche.checkOut}</p>}
+        {niche?.starRating && <p><strong>Star Rating:</strong> {niche.starRating} ⭐</p>}
+        {niche?.apartmentType && <p><strong>Type:</strong> {niche.apartmentType}</p>}
+        {niche?.furnished != null && <p><strong>Furnished:</strong> {niche.furnished ? 'Yes' : 'No'}</p>}
+        {niche?.schoolType && <p><strong>School Type:</strong> {niche.schoolType}</p>}
+        {niche?.curriculum && <p><strong>Curriculum:</strong> {niche.curriculum}</p>}
+        {niche?.studentCount != null && <p><strong>Students:</strong> {niche.studentCount}</p>}
+        {niche?.facilityType && <p><strong>Facility Type:</strong> {niche.facilityType}</p>}
+        {niche?.doctorCount != null && <p><strong>Doctors:</strong> {niche.doctorCount}</p>}
+        {niche?.visitingHours && <p><strong>Visiting Hours:</strong> {niche.visitingHours}</p>}
+        {niche?.emergency != null && <p><strong>Emergency Services:</strong> {niche.emergency ? 'Yes' : 'No'}</p>}
+        {niche?.insuranceAccepted && <p><strong>Insurance:</strong> {niche.insuranceAccepted}</p>}
+      </section>
+    )}
+
+    <WrittenDirections directions={listing.directions} />
+    <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
+    <ListingFaqs faqs={listing.faqs} />
+
+    {listing.blog?.title && (
+      <section style="background:#fff8f0; padding:1.5rem; border-radius:8px; border-left:6px solid #ff8c00; margin:2rem 0;">
+        <h2 style="color:#804000; margin-top:0;">📝 Full Review</h2>
+        <BlogArticle 
+          blog={listing.blog}
+          listingSlug={listing.slug}
+          listingName={listing.name}
+          index={0}
+        />
+      </section>
+    )}
+
+    <div style="margin:2rem 0;">
+      <a href={`/${directoryData.directory}/`} style="display:inline-block; padding:0.75rem 1.5rem; background:#0066cc; color:white; text-decoration:none; border-radius:4px; font-weight:bold;">
+        ← Back to {directoryData.nicheDisplay} in {directoryData.locationDisplay}
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

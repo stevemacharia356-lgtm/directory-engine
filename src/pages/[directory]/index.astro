@@ -7,7 +7,6 @@ import {
   generateApartmentSchema,
   generateSchoolSchema,
   generateMedicalSchema,
-  generateArticleSchema,
   generateFAQPageSchema,
   generateItemListSchema
 } from '../../lib/schema';
@@ -16,13 +15,10 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import LocationIntro from '../../components/LocationIntro.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
-import BlogArticle from '../../components/BlogArticle.astro';
 import GlobalFaq from '../../components/GlobalFaq.astro';
-import GuesthouseListing from '../../components/niches/GuesthouseListing.astro';
-import HotelListing from '../../components/niches/HotelListing.astro';
-import ApartmentListing from '../../components/niches/ApartmentListing.astro';
-import SchoolListing from '../../components/niches/SchoolListing.astro';
-import HealthListing from '../../components/niches/HealthListing.astro';
+import PhoneButton from '../../components/PhoneButton.astro';
+import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import WrittenDirections from '../../components/WrittenDirections.astro';
 
 export async function getStaticPaths() {
   const slugs = await getAllDirectorySlugs();
@@ -51,10 +47,8 @@ const geoCoords = listings[0]?.coordinates;
 const geoPlacename = `${locationDisplay}, Kenya`;
 
 const tocSections = [
-  { id: 'compare', label: `Compare ${nicheDisplay}` },
-  ...listings.map((l: any) => ({ id: l.slug, label: l.name })),
-  { id: 'reviews', label: 'Detailed Reviews' },
-  ...listings.map((l: any) => ({ id: l.blog?.slug || '', label: l.blog?.title || '' })).filter((s: any) => s.id),
+  { id: 'listings', label: `${nicheDisplay} in ${locationDisplay}` },
+  ...listings.map((l: any, idx: number) => ({ id: l.slug, label: `${idx + 1}. ${l.name}` })),
   { id: 'faq', label: 'Frequently Asked Questions' }
 ];
 
@@ -68,10 +62,6 @@ listings.forEach((listing: any) => {
   else if (nicheSlug === 'apartment') schemas.push(generateApartmentSchema(listing, directoryData.directory));
   else if (nicheSlug === 'school') schemas.push(generateSchoolSchema(listing, directoryData.directory));
   else if (nicheSlug === 'health') schemas.push(generateMedicalSchema(listing, directoryData.directory));
-  
-  if (listing.blog?.title) {
-    schemas.push(generateArticleSchema(listing, `${Astro.url.origin}/${directoryData.directory}/`));
-  }
 });
 
 if (directoryData.globalFaqs?.length) {
@@ -115,42 +105,46 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
     <TableOfContents sections={tocSections} />
 
     <div style="text-align:center; padding:0.5rem; margin:0.5rem 0 1.5rem 0; color:#999; font-size:0.85rem; border-bottom:1px dashed #ddd;">
-      📖 {listings.length} {nicheDisplay.toLowerCase()} reviewed • {directoryData.globalFaqs?.length || 0} FAQs answered
+      📖 {listings.length} {nicheDisplay.toLowerCase()} listed • {directoryData.globalFaqs?.length || 0} FAQs answered
     </div>
 
-    <section id="compare" style="background:#f0f4ff; padding:1.5rem; border-radius:8px; border-left:6px solid #0066cc; margin-bottom:2rem;">
-      <h2 style="color:#003d80; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #cce0ff;">📍 Compare {nicheDisplay} in {locationDisplay}</h2>
-      <p style="color:#555; margin-bottom:1.5rem;">Click "See Details & Contact" on any listing to view amenities, phone numbers, WhatsApp, written directions, and a map.</p>
-      
-      {nicheSlug === 'guesthouse' && listings.map((l: any, idx: number) => (
-        <GuesthouseListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
-      ))}
-      {nicheSlug === 'hotel' && listings.map((l: any, idx: number) => (
-        <HotelListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
-      ))}
-      {nicheSlug === 'apartment' && listings.map((l: any, idx: number) => (
-        <ApartmentListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
-      ))}
-      {nicheSlug === 'school' && listings.map((l: any, idx: number) => (
-        <SchoolListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
-      ))}
-      {nicheSlug === 'health' && listings.map((l: any, idx: number) => (
-        <HealthListing listing={l} index={idx} reviewAnchorId={l.blog?.slug || ''} />
-      ))}
-    </section>
-
-    <section id="reviews" style="background:#fff8f0; padding:1.5rem; border-radius:8px; border-left:6px solid #ff8c00; margin-bottom:2rem;">
-      <h2 style="color:#804000; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #ffe0b3;">📝 Detailed Reviews of {nicheDisplay} in {locationDisplay}</h2>
+    <section id="listings" style="background:#f0f4ff; padding:1.5rem; border-radius:8px; border-left:6px solid #0066cc; margin-bottom:2rem;">
+      <h2 style="color:#003d80; font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #cce0ff;">📍 {nicheDisplay} in {locationDisplay}</h2>
+      <p style="color:#555; margin-bottom:1.5rem;">Click on any listing for full details, photos, reviews, and contact information.</p>
       
       {listings.map((listing: any, idx: number) => (
-        listing.blog?.title ? (
-          <BlogArticle 
-            blog={listing.blog}
-            listingSlug={listing.slug}
-            listingName={listing.name}
-            index={idx}
-          />
-        ) : null
+        <div id={listing.slug} style="border:1px solid #e0e0e0; border-radius:8px; padding:1rem; margin:1rem 0; background:white;">
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            {listing.thumbnail && (
+              <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="200" height="150" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:4px; object-fit:cover;" />
+            )}
+            <div style="flex:1; min-width:200px;">
+              <h3 style="margin:0 0 0.25rem 0; font-size:1.2rem;">{idx + 1}. {listing.name}</h3>
+              <p style="font-weight:bold; font-size:1.1rem; color:#2a7f2a; margin:0.25rem 0;">
+                {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
+              </p>
+              <p style="margin:0.25rem 0; color:#555;">{listing.summary}</p>
+              
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.5rem 0;">
+                {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).slice(0, 4).map((a: string) => (
+                  <span style="background:#e8f4e8; padding:0.15rem 0.5rem; border-radius:20px; font-size:0.8rem;">✓ {a}</span>
+                ))}
+                {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).length > 4 && (
+                  <span style="color:#999; font-size:0.8rem;">+ more</span>
+                )}
+              </div>
+
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin:0.5rem 0;">
+                <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
+                <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
+              </div>
+
+              <a href={`/${directoryData.directory}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.5rem 1rem; background:#0066cc; color:white; text-decoration:none; border-radius:4px; font-weight:bold;">
+                See Full Details →
+              </a>
+            </div>
+          </div>
+        </div>
       ))}
     </section>
 
