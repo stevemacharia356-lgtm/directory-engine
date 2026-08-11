@@ -14,14 +14,14 @@ export const GET: APIRoute = async () => {
     <priority>0.8</priority>
   </url>\n`;
     
-    // Individual listing pages
+    // Individual listing pages - same priority as directory pages
     const data = await getDirectoryData(slug);
     if (data && data.listings) {
       for (const listing of data.listings) {
         urls += `  <url>
     <loc>https://mymaindomain.co.ke/${slug}/${listing.slug}/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>\n`;
       }
     }
