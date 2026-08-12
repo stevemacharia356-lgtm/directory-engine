@@ -1,5 +1,4 @@
 ---
-import { getFirestore } from 'firebase-admin/firestore';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
@@ -8,13 +7,18 @@ import WhatsAppButton from '../../components/WhatsAppButton.astro';
 import WrittenDirections from '../../components/WrittenDirections.astro';
 import MapFacade from '../../components/MapFacade.astro';
 
+// Import firestore.ts to trigger Firebase initialization
+import '../../lib/firestore';
+
 export async function getStaticPaths() {
+  const { getFirestore } = await import('firebase-admin/firestore');
   const db = getFirestore();
   const snapshot = await db.collection('businesses').where('status', '==', 'published').get();
   return snapshot.docs.map(doc => ({ params: { business: doc.id } }));
 }
 
 const { business } = Astro.params;
+const { getFirestore } = await import('firebase-admin/firestore');
 const db = getFirestore();
 const doc = await db.collection('businesses').doc(business).get();
 
