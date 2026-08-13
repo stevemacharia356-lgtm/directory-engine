@@ -1,5 +1,5 @@
 ---
-import { getAllDirectorySlugs, getDirectoryData } from '../lib/firestore';
+import { getAllDirectorySlugs, getDirectoryData, getAllBusinessSlugs, getBusinessData } from '../lib/firestore';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -13,11 +13,19 @@ for (let i = 0; i < slugs.length; i += limit) {
   const results = await Promise.all(batch.map(slug => getDirectoryData(slug)));
   directories.push(...results.filter(Boolean));
 }
+
+// Fetch published business pages
+const businessSlugs = await getAllBusinessSlugs();
+const businesses = [];
+for (const bizSlug of businessSlugs) {
+  const biz = await getBusinessData(bizSlug);
+  if (biz) businesses.push({ slug: bizSlug, ...biz });
+}
 ---
 
 <BaseLayout
   title="Kenya Accommodation Directory — Find Guesthouses, Apartments, Hotels & More"
-  description="Comprehensive directory of accommodations across Kenya. Honest reviews, photos, prices, and contact details."
+  description="Comprehensive directory of accommodations and businesses across Kenya. Honest reviews, photos, prices, and contact details."
 >
   <Header breadcrumbs={[{ label: 'Home' }]} />
   
@@ -25,8 +33,9 @@ for (let i = 0; i < slugs.length; i += limit) {
     <h1>Kenya Accommodation Directory</h1>
     <p>Honest reviews and detailed information about accommodations and businesses across Kenya. Click a location to compare options, see photos, and get contact details.</p>
     
+    <h2 style="margin-top:2rem;">📍 Directories by Location</h2>
     {directories.length === 0 ? (
-      <p>No locations available yet. Check back soon.</p>
+      <p>No directories available yet. Check back soon.</p>
     ) : (
       <ul style="list-style:none; padding:0; display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));">
         {directories.map(dir => (
@@ -34,8 +43,28 @@ for (let i = 0; i < slugs.length; i += limit) {
             <a href={`/${dir!.directory}/`} style="text-decoration:none; color:inherit; display:block;">
               <img src={dir!.heroImage} alt={dir!.heroImageAlt} width="400" height="200" loading="lazy" style="width:100%; height:200px; object-fit:cover;" />
               <div style="padding:1rem;">
-                <h2 style="font-size:1.2rem; margin:0;">{dir!.nicheDisplay} in {dir!.locationDisplay}</h2>
+                <h3 style="font-size:1.1rem; margin:0;">{dir!.nicheDisplay} in {dir!.locationDisplay}</h3>
                 <p style="margin:0.5rem 0 0; color:#666;">{dir!.listings.length} places reviewed</p>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <h2 style="margin-top:3rem;">🏢 Featured Businesses</h2>
+    {businesses.length === 0 ? (
+      <p>No featured businesses yet. Check back soon.</p>
+    ) : (
+      <ul style="list-style:none; padding:0; display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));">
+        {businesses.map(biz => (
+          <li style="border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">
+            <a href={`/business/${biz.slug}/`} style="text-decoration:none; color:inherit; display:block;">
+              {biz.heroImage ? <img src={biz.heroImage} alt={biz.heroImageAlt || biz.name} width="400" height="200" loading="lazy" style="width:100%; height:200px; object-fit:cover;" /> : <div style="width:100%; height:200px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; color:#999;">No Image</div>}
+              <div style="padding:1rem;">
+                <h3 style="font-size:1.1rem; margin:0;">{biz.name}</h3>
+                <p style="margin:0.25rem 0 0; color:#666;">{biz.location}</p>
+                {biz.tagline && <p style="margin:0.25rem 0 0; color:#999; font-size:0.9rem;">{biz.tagline}</p>}
               </div>
             </a>
           </li>
