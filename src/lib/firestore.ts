@@ -1,3 +1,4 @@
+
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { marked } from 'marked';
@@ -119,10 +120,34 @@ export interface DirectoryData {
   heroImageAlt: string;
   heroImageStatus: string;
   status: string;
+  categoryTag?: string;
   lastModified: string;
   lastEditedAt: string;
   listings: Listing[];
   globalFaqs: Faq[];
+}
+
+export interface BusinessData {
+  name: string;
+  tagline?: string;
+  description: string;
+  phone?: string;
+  phoneDisplay?: string;
+  whatsapp?: string;
+  whatsappMessage?: string;
+  services?: string[];
+  directions?: string;
+  coordinates?: Coordinates;
+  heroImage?: string;
+  heroImageAlt?: string;
+  blog?: {
+    title: string;
+    body: string;
+    bodyHtml?: string;
+    lastModified: string;
+  };
+  status: string;
+  lastEditedAt: string;
 }
 
 function sanitizeHtml(html: string): string {
@@ -201,4 +226,37 @@ export function formatPrice(numeric: number, suffix: string): string {
   const formatted = numeric.toLocaleString('en-KE');
   if (!suffix) return `KSh ${formatted}`;
   return `KSh ${formatted}${suffix}`;
+}
+
+// Business page functions
+export async function getAllBusinessSlugs(): Promise<string[]> {
+  try {
+    const snapshot = await db.collection('businesses')
+      .where('status', '==', 'published')
+      .select('name')
+      .get();
+    return snapshot.docs.map(doc => doc.id);
+  } catch (error) {
+    console.error('Failed to fetch business slugs:', error);
+    return [];
+  }
+}
+
+export async function getBusinessData(business: string): Promise<BusinessData | null> {
+  try {
+    const doc = await db.collection('businesses').doc(business).get();
+    if (!doc.exists) return null;
+    const data = doc.data() as BusinessData;
+    if (data.status !== 'published') return null;
+    
+    if (data.blog?.body) {
+      const rawHtml = marked.parse(data.blog.body) as string;
+      data.blog.bodyHtml = sanitizeHtml(rawHtml);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch business ${business}: ${error}`);
+    return null;
+  }
 }
