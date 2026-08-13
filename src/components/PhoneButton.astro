@@ -9,8 +9,8 @@ const { phone, display } = Astro.props;
 
 <a 
   href={`tel:${phone}`} 
-  style="display:inline-block; background:#28a745; color:white; padding:0.75rem 1.5rem; border-radius:4px; text-decoration:none; font-weight:bold;"
+  style="display:inline-block; background:#28a745; color:white; padding:0.75rem 1.5rem; border-radius:4px; text-decoration:none; font-weight:bold; min-width:150px; text-align:center;"
   rel="nofollow"
 >
-  📞 Call {display}
+  📞 Call
 </a>
