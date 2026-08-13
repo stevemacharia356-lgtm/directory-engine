@@ -32,6 +32,51 @@ for (const dirSlug of allDirs) {
 
 const pageTitle = data.name + ' — ' + (data.tagline || 'Welcome');
 const pageDescription = data.description?.substring(0, 160) || '';
+
+// JSON-LD schemas
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: data.name,
+  description: data.description,
+  image: data.heroImage || undefined,
+  telephone: data.phone || undefined,
+  address: data.location ? {
+    '@type': 'PostalAddress',
+    addressLocality: data.location,
+    addressCountry: 'KE'
+  } : undefined,
+  geo: data.coordinates ? {
+    '@type': 'GeoCoordinates',
+    latitude: data.coordinates.lat,
+    longitude: data.coordinates.lng
+  } : undefined,
+  openingHours: data.openingHours ? [
+    data.openingHours.weekdays ? 'Mo-Fr ' + data.openingHours.weekdays : null,
+    data.openingHours.saturday ? 'Sa ' + data.openingHours.saturday : null,
+    data.openingHours.sunday ? 'Su ' + data.openingHours.sunday : null
+  ].filter(Boolean) : undefined,
+  priceRange: data.priceRange || undefined
+};
+
+const faqSchema = data.faqs && data.faqs.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: data.faqs.map(faq => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+  }))
+} : null;
+
+const articleSchema = data.blog?.title ? {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: data.blog.title,
+  dateModified: data.blog.lastModified,
+  author: { '@type': 'Organization', name: 'Kenya Accommodation Directory' },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': `${Astro.url.origin}/business/${business}/` }
+} : null;
 ---
 
 <BaseLayout
@@ -42,6 +87,12 @@ const pageDescription = data.description?.substring(0, 160) || '';
   geoCoordinates={data.coordinates}
   geoPlacename={data.location ? data.location + ', Kenya' : 'Kenya'}
 >
+  <slot name="head">
+    <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
+    {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
+    {articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+  </slot>
+
   <Header breadcrumbs={[{ label: 'Home', url: '/' }, { label: data.name }]} />
 
   <main>
@@ -99,6 +150,18 @@ const pageDescription = data.description?.substring(0, 160) || '';
 
     {data.directions && <WrittenDirections directions={data.directions} />}
     {data.coordinates && <MapFacade lat={data.coordinates.lat} lng={data.coordinates.lng} name={data.name} />}
+
+    {data.faqs && data.faqs.length > 0 && (
+      <section style="margin:1.5rem 0;">
+        <h2 style="color:#333;">Frequently Asked Questions</h2>
+        {data.faqs.map((faq: any) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p style="padding:0.5rem 1rem;">{faq.answer}</p>
+          </details>
+        ))}
+      </section>
+    )}
 
     {data.blog?.title && (
       <section style="background:#fff8f0; padding:1.5rem; border-radius:8px; border-left:6px solid #ff8c00; margin:2rem 0;">
