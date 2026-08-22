@@ -22,11 +22,11 @@ Guesthouse (LocalBusiness), Hotel (Hotel), Apartment (ApartmentComplex), School 
 Budget, Mid-range, Premium, Luxury — displayed on public pages. Exact numeric price optional, for reference only.
 
 ## TWO-LEVEL PAGE STRUCTURE
-Directory page: Minimal listing cards with thumbnail, name, price category, summary, amenities, phone/WhatsApp buttons, "See Full Details →" link.
+Directory page: Listing cards with photo on top (full width), name, price category, summary, amenities, phone/WhatsApp buttons below photo, "See Full Details →" link.
 Individual page: Full details, complete blog review, FAQs, amenities, written directions, map, back-link to directory.
 
 ## BUSINESS PAGES (SEPARATE FEATURE)
-Standalone one-page business websites under the main domain. Created via dashboard Business Pages tab. Fields: business name, location, category, tagline, description, phone, WhatsApp, services, opening hours, directions, coordinates, hero image, FAQs, optional blog. URL includes location and name. Business pages link to same-location directories for internal linking. Homepage displays business pages in Featured Businesses section.
+Standalone one-page business websites under the main domain. Created via dashboard Business Pages tab. Fields: business name, location, category, tagline, description, phone, WhatsApp, services, opening hours, directions, coordinates, hero image, FAQs, optional blog. URL includes location and name. Business pages link to same-location directories. Homepage displays business pages in Featured Businesses section.
 
 ## JSON-LD SCHEMAS
 - Directory pages: LocalBusiness per listing, ItemList, FAQPage, BreadcrumbList
@@ -43,8 +43,8 @@ src/components/Header.astro — Breadcrumbs with BreadcrumbList JSON-LD
 src/components/Footer.astro — Copyright, nav links to Home, About, Privacy
 src/components/LocationIntro.astro — H1, hero image, description
 src/components/TableOfContents.astro — Anchor link navigation
-src/components/PhoneButton.astro — Green Call button (no number displayed, equal width)
-src/components/WhatsAppButton.astro — Green WhatsApp button (equal width)
+src/components/PhoneButton.astro — Green Call button (no number, equal width 150px)
+src/components/WhatsAppButton.astro — Green WhatsApp button (equal width 150px)
 src/components/WrittenDirections.astro — Yellow directions box
 src/components/MapFacade.astro — Google Maps link (no API key needed)
 src/components/ListingFaqs.astro — Details/summary per-listing FAQs
@@ -56,7 +56,7 @@ src/components/niches/ApartmentListing.astro — Apartment card with icons
 src/components/niches/SchoolListing.astro — School card with icons
 src/components/niches/HealthListing.astro — Health card with icons
 src/pages/index.astro — Homepage with directories grid + Featured Businesses section
-src/pages/[directory]/index.astro — Directory page with minimal listing cards
+src/pages/[directory]/index.astro — Directory page with photo-on-top listing cards
 src/pages/[directory]/[slug].astro — Individual listing page with full details
 src/pages/business/[business].astro — Business page with JSON-LD schema, FAQs, internal links
 src/pages/about.astro — About page with contact details
@@ -83,14 +83,15 @@ scripts/check-build.js — Performance and document size checks
 - HTML cache max-age=0 must-revalidate
 - Directory and individual listing pages have equal sitemap priority (0.8)
 - Business pages linked from homepage
-- Phone and WhatsApp buttons equal size (150px min-width)
+- Phone and WhatsApp buttons equal size (150px min-width, no phone number displayed)
+- Listing cards: photo on top full width, content below
 
 ## GITHUB SECRETS
 FIREBASE_SERVICE_ACCOUNT_BASE64
 FIREBASE_TOKEN
 
 ## DASHBOARD
-Separate project at admin-dashboard-dc821.web.app. Connects to same Firestore and Storage. Dashboard handles directories, listings, and business pages. Business pages have their own tab with create, edit, publish, unpublish, delete.
+Separate project at admin-dashboard-dc821.web.app. Connects to same Firestore and Storage. Dashboard handles directories, listings, and business pages. All buttons have locking to prevent double-clicks. Only name/location required for saving.
 
 ## POST-LAUNCH TASKS (after domain purchase)
 1. Google Search Console verification and sitemap submission
