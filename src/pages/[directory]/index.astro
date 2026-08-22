@@ -18,7 +18,6 @@ import TableOfContents from '../../components/TableOfContents.astro';
 import GlobalFaq from '../../components/GlobalFaq.astro';
 import PhoneButton from '../../components/PhoneButton.astro';
 import WhatsAppButton from '../../components/WhatsAppButton.astro';
-import WrittenDirections from '../../components/WrittenDirections.astro';
 
 export async function getStaticPaths() {
   const slugs = await getAllDirectorySlugs();
@@ -114,36 +113,33 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       
       {listings.map((listing: any, idx: number) => (
         <div id={listing.slug} style="border:1px solid #e0e0e0; border-radius:8px; padding:1rem; margin:1rem 0; background:white;">
-          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-            {listing.thumbnail && (
-              <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="200" height="150" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:4px; object-fit:cover;" />
+          {listing.thumbnail && (
+            <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:4px; width:100%; height:auto; object-fit:cover; margin-bottom:0.75rem;" />
+          )}
+          
+          <h3 style="margin:0 0 0.25rem 0; font-size:1.2rem;">{idx + 1}. {listing.name}</h3>
+          <p style="font-weight:bold; font-size:1.1rem; color:#2a7f2a; margin:0.25rem 0;">
+            {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
+          </p>
+          <p style="margin:0.25rem 0; color:#555;">{listing.summary}</p>
+          
+          <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.5rem 0;">
+            {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).slice(0, 4).map((a: string) => (
+              <span style="background:#e8f4e8; padding:0.15rem 0.5rem; border-radius:20px; font-size:0.8rem;">✓ {a}</span>
+            ))}
+            {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).length > 4 && (
+              <span style="color:#999; font-size:0.8rem;">+ more</span>
             )}
-            <div style="flex:1; min-width:200px;">
-              <h3 style="margin:0 0 0.25rem 0; font-size:1.2rem;">{idx + 1}. {listing.name}</h3>
-              <p style="font-weight:bold; font-size:1.1rem; color:#2a7f2a; margin:0.25rem 0;">
-                {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
-              </p>
-              <p style="margin:0.25rem 0; color:#555;">{listing.summary}</p>
-              
-              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.5rem 0;">
-                {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).slice(0, 4).map((a: string) => (
-                  <span style="background:#e8f4e8; padding:0.15rem 0.5rem; border-radius:20px; font-size:0.8rem;">✓ {a}</span>
-                ))}
-                {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).length > 4 && (
-                  <span style="color:#999; font-size:0.8rem;">+ more</span>
-                )}
-              </div>
-
-              <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin:0.5rem 0;">
-                <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
-                <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
-              </div>
-
-              <a href={`/${directoryData.directory}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.5rem 1rem; background:#0066cc; color:white; text-decoration:none; border-radius:4px; font-weight:bold;">
-                See Full Details →
-              </a>
-            </div>
           </div>
+
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin:0.5rem 0;">
+            <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
+            <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
+          </div>
+
+          <a href={`/${directoryData.directory}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.5rem 1rem; background:#0066cc; color:white; text-decoration:none; border-radius:4px; font-weight:bold;">
+            See Full Details →
+          </a>
         </div>
       ))}
     </section>
