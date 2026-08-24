@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build
 export default defineConfig({
-  site: 'https://mymaindomain.co.ke',
+  site: 'https://kedirectory.co.ke',
   integrations: [sitemap()],
   image: {
     service: {
