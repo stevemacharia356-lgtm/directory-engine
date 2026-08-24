@@ -4,6 +4,14 @@ export interface Props {
 }
 
 const { breadcrumbs } = Astro.props;
+
+const filteredCrumbs = breadcrumbs.filter(c => c.url);
+const crumbItems = filteredCrumbs.map((crumb, i) => ({
+  '@type': 'ListItem',
+  position: i + 1,
+  name: crumb.label,
+  item: `https://kedirectory.co.ke${crumb.url}`
+}));
 ---
 
 <header>
@@ -19,17 +27,8 @@ const { breadcrumbs } = Astro.props;
   </nav>
 </header>
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {breadcrumbs.filter(c => c.url).map((crumb, i) => ({
-        "@type": "ListItem",
-        "position": i + 1,
-        "name": crumb.label,
-        "item": `https://mymaindomain.co.ke${crumb.url}`
-      })).join(',')}
-    ]
-  }
-</script>
+<script type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbItems
+})} />
