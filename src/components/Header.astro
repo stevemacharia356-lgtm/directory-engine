@@ -27,8 +27,10 @@ const crumbItems = filteredCrumbs.map((crumb, i) => ({
   </nav>
 </header>
 
-<script type="application/ld+json" set:html={JSON.stringify({
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: crumbItems
-})} />
+{crumbItems.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbItems
+  })} />
+)}
