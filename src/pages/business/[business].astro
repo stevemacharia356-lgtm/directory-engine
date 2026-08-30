@@ -20,7 +20,6 @@ if (!data) {
   return Astro.redirect('/404');
 }
 
-// Get related directories for internal linking
 const allDirs = await getAllDirectorySlugs();
 const relatedDirs = [];
 for (const dirSlug of allDirs) {
@@ -33,7 +32,6 @@ for (const dirSlug of allDirs) {
 const pageTitle = data.name + ' — ' + (data.tagline || 'Welcome');
 const pageDescription = data.description?.substring(0, 160) || '';
 
-// JSON-LD schemas
 const localBusinessSchema = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
@@ -74,7 +72,7 @@ const articleSchema = data.blog?.title ? {
   '@type': 'Article',
   headline: data.blog.title,
   dateModified: data.blog.lastModified,
-  author: { '@type': 'Organization', name: 'Kenya Accommodation Directory' },
+  author: { '@type': 'Organization', name: 'Kenya Accommodation & Business Directory' },
   mainEntityOfPage: { '@type': 'WebPage', '@id': `${Astro.url.origin}/business/${business}/` }
 } : null;
 ---
@@ -96,53 +94,55 @@ const articleSchema = data.blog?.title ? {
   <Header breadcrumbs={[{ label: 'Home', url: '/' }, { label: data.name }]} />
 
   <main>
-    <section style="text-align:center; padding:2rem 0;">
+    <section style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
       {data.heroImage && (
-        <img src={data.heroImage} alt={data.heroImageAlt || data.name} width="800" height="400" loading="eager" style="border-radius:8px; width:100%; max-height:400px; object-fit:cover;" />
+        <img src={data.heroImage} alt={data.heroImageAlt || data.name} width="800" height="400" loading="eager" style="border-radius:0; width:100%; max-height:400px; object-fit:cover;" />
       )}
-      <h1 style="font-size:2rem; margin:1rem 0 0.5rem;">{data.name}</h1>
-      {data.tagline && <p style="font-size:1.2rem; color:#666; font-style:italic;">{data.tagline}</p>}
-      {data.category && <span style="background:#0066cc; color:white; padding:0.3rem 1rem; border-radius:20px; font-size:0.9rem;">{data.category}</span>}
+      <div style="padding:1.5rem; text-align:center;">
+        <h1 style="font-size:1.8rem; margin-bottom:0.5rem; line-height:1.3;">{data.name}</h1>
+        {data.tagline && <p style="font-size:1.05rem; color:#666; font-style:italic; margin:0.25rem 0;">{data.tagline}</p>}
+        {data.category && <span style="background:#0066cc; color:white; padding:0.3rem 1rem; border-radius:20px; font-size:0.85rem; display:inline-block; margin-top:0.5rem;">{data.category}</span>}
+      </div>
     </section>
 
-    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin:1.5rem 0;">
+    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; margin:1.25rem 0;">
       {data.phone && <PhoneButton phone={data.phone} display={data.phoneDisplay || data.phone} />}
       {data.whatsapp && <WhatsAppButton number={data.whatsapp} message={data.whatsappMessage || 'Hello, I visited your website.'} />}
     </div>
 
     {data.openingHours && (
-      <section style="background:#f0f4ff; padding:1rem; border-radius:8px; margin:1rem 0; text-align:center;">
-        <h3 style="margin-top:0; color:#003d80;">🕐 Opening Hours</h3>
-        <p style="margin:0.25rem 0;"><strong>Mon-Fri:</strong> {data.openingHours.weekdays || 'N/A'}</p>
-        <p style="margin:0.25rem 0;"><strong>Saturday:</strong> {data.openingHours.saturday || 'N/A'}</p>
-        <p style="margin:0.25rem 0;"><strong>Sunday:</strong> {data.openingHours.sunday || 'N/A'}</p>
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0; text-align:center;">
+        <h2 style="margin-top:0; font-size:1.2rem; color:#003d80;">🕐 Opening Hours</h2>
+        <p style="margin:0.35rem 0;"><strong>Mon-Fri:</strong> {data.openingHours.weekdays || 'N/A'}</p>
+        <p style="margin:0.35rem 0;"><strong>Saturday:</strong> {data.openingHours.saturday || 'N/A'}</p>
+        <p style="margin:0.35rem 0;"><strong>Sunday:</strong> {data.openingHours.sunday || 'N/A'}</p>
       </section>
     )}
 
     {data.description && (
-      <section style="background:#f8f8f8; padding:1.5rem; border-radius:8px; margin:1.5rem 0;">
-        <h2 style="color:#333; margin-top:0;">About {data.name}</h2>
-        <p style="font-size:1.1rem; line-height:1.8;">{data.description}</p>
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem;">About {data.name}</h2>
+        <p style="font-size:1.05rem; line-height:1.8; color:#444; margin-top:0.5rem;">{data.description}</p>
       </section>
     )}
 
     {data.services && data.services.length > 0 && (
-      <section style="margin:1.5rem 0;">
-        <h2 style="color:#333;">What We Offer</h2>
-        <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem;">What We Offer</h2>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
           {data.services.map((s: string) => (
-            <span style="background:#e8f4e8; padding:0.5rem 1rem; border-radius:20px; font-size:1rem;">✓ {s}</span>
+            <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {s}</span>
           ))}
         </div>
       </section>
     )}
 
     {data.photos && data.photos.length > 0 && (
-      <section style="margin:1.5rem 0;">
-        <h2 style="color:#333;">Gallery</h2>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:0.5rem;">
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem;">Gallery</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:0.5rem; margin-top:0.75rem;">
           {data.photos.map((photo: any) => (
-            <img src={photo.src} alt={photo.alt || data.name} width="400" height="300" loading="lazy" style="border-radius:4px; width:100%; object-fit:cover;" />
+            <img src={photo.src} alt={photo.alt || data.name} width="400" height="300" loading="lazy" style="border-radius:8px; width:100%; object-fit:cover;" />
           ))}
         </div>
       </section>
@@ -152,8 +152,8 @@ const articleSchema = data.blog?.title ? {
     {data.coordinates && <MapFacade lat={data.coordinates.lat} lng={data.coordinates.lng} name={data.name} />}
 
     {data.faqs && data.faqs.length > 0 && (
-      <section style="margin:1.5rem 0;">
-        <h2 style="color:#333;">Frequently Asked Questions</h2>
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem;">Frequently Asked Questions</h2>
         {data.faqs.map((faq: any) => (
           <details>
             <summary>{faq.question}</summary>
@@ -164,21 +164,29 @@ const articleSchema = data.blog?.title ? {
     )}
 
     {data.blog?.title && (
-      <section style="background:#fff8f0; padding:1.5rem; border-radius:8px; border-left:6px solid #ff8c00; margin:2rem 0;">
-        <h2 style="color:#804000; margin-top:0;">📝 {data.blog.title}</h2>
-        <time datetime={data.blog.lastModified} style="font-size:0.8rem; color:#999;">
-          🕐 Last updated: {new Date(data.blog.lastModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </time>
-        <div style="margin-top:1rem; line-height:1.8;">
-          <Fragment set:html={data.blog.bodyHtml || ''} />
-        </div>
+      <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0; overflow:hidden;">
+        <details style="border:none; margin:0; padding:0;">
+          <summary style="padding:1.25rem; font-size:1.2rem; font-weight:600; color:#804000; cursor:pointer; background:#fff8f0; border-radius:12px 12px 0 0; list-style:none;">
+            📝 Click to Read Full Review
+            <span style="display:block; font-size:0.9rem; font-weight:400; color:#666; margin-top:0.25rem;">{data.blog.title}</span>
+            <span style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:#0066cc;">Tap to expand ↓</span>
+          </summary>
+          <div style="padding:1.25rem; line-height:1.8;">
+            <time datetime={data.blog.lastModified} style="font-size:0.8rem; color:#999;">
+              🕐 Last updated: {new Date(data.blog.lastModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </time>
+            <div style="margin-top:1rem;">
+              <Fragment set:html={data.blog.bodyHtml || ''} />
+            </div>
+          </div>
+        </details>
       </section>
     )}
 
     {relatedDirs.length > 0 && (
-      <section style="background:#f0f4ff; padding:1.5rem; border-radius:8px; margin:2rem 0;">
-        <h2 style="color:#003d80; margin-top:0;">Explore More in {data.location}</h2>
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">Explore More in {data.location}</h2>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
           {relatedDirs.map((dir: any) => (
             <a href={`/${dir.directory}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
               {dir.nicheDisplay} in {dir.locationDisplay}
@@ -189,7 +197,7 @@ const articleSchema = data.blog?.title ? {
     )}
 
     <div style="text-align:center; margin:2rem 0;">
-      <a href="/" style="display:inline-block; padding:0.75rem 1.5rem; background:#0066cc; color:white; text-decoration:none; border-radius:4px; font-weight:bold;">
+      <a href="/" style="display:inline-block; padding:0.75rem 1.5rem; background:#0066cc; color:white; text-decoration:none; border-radius:8px; font-weight:600;">
         ← Back to Home
       </a>
     </div>
