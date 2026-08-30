@@ -1,105 +1,118 @@
-# KNOWLEDGE.md — POLYMORPHIC LOCAL AUTHORITY ENGINE V1
+# KNOWLEDGE.md — KEDIRECTORY ENGINE V1 (FINAL)
 
 ## PROJECT OVERVIEW
-Astro static site engine for a Kenya local directory platform. Reads from Firestore, generates pages for 5 business niches per location plus standalone business pages. Zero hardcoded content. Deployed via GitHub Actions to Firebase Hosting.
+Astro static site engine for Kenya Accommodation & Business Directory. Reads from Firestore, generates pages for 5 business niches per location plus standalone business pages. Zero hardcoded content. Live at kedirectory.co.ke. Deployed via GitHub Actions to Firebase Hosting.
 
 ## STACK
-Astro SSG + Firestore Admin SDK + Firebase Hosting + GitHub Actions
+Astro SSG + Firestore Admin SDK + Firebase Hosting + GitHub Actions + Cloudflare (DNS)
+
+## LIVE DOMAIN
+kedirectory.co.ke
+Dashboard: admin-dashboard-dc821.web.app
+Google Search Console: verified
+Bing Webmaster Tools: verified
 
 ## URL STRUCTURE (NEVER CHANGES)
-- Directory pages: mymaindomain.co.ke/{directory}/
-- Individual listing pages: mymaindomain.co.ke/{directory}/{slug}/
-- Business pages: mymaindomain.co.ke/business/{business-slug}/
+- Directory pages: kedirectory.co.ke/{directory}/
+- Individual listing pages: kedirectory.co.ke/{directory}/{slug}/
+- Business pages: kedirectory.co.ke/business/{business-slug}/
 - Business slug format: business-{location}-{name}
-- Homepage: mymaindomain.co.ke/
-- About: mymaindomain.co.ke/about/
-- Privacy: mymaindomain.co.ke/privacy/
+- Homepage: kedirectory.co.ke/
+- About: kedirectory.co.ke/about/
+- Privacy: kedirectory.co.ke/privacy/
+- Favicon: kedirectory.co.ke/favicon.svg (dark navy "KE")
 
 ## 5 NICHES
 Guesthouse (LocalBusiness), Hotel (Hotel), Apartment (ApartmentComplex), School (EducationalOrganization), Health (MedicalOrganization)
 
 ## PRICE CATEGORIES
-Budget, Mid-range, Premium, Luxury — displayed on public pages. Exact numeric price optional, for reference only.
+Budget, Mid-range, Premium, Luxury — displayed on public pages. Exact numeric price optional.
 
 ## TWO-LEVEL PAGE STRUCTURE
-Directory page: Listing cards with photo on top (full width), name, price category, summary, amenities, phone/WhatsApp buttons below photo, "See Full Details →" link.
-Individual page: Full details, complete blog review, FAQs, amenities, written directions, map, back-link to directory.
+Directory page: Listing cards with photo on top (full width), name, price category, summary, amenities, phone/WhatsApp buttons, "See Full Details →" link.
+Individual page: Full details, blog review, FAQs, amenities, directions, map, back-link.
 
 ## BUSINESS PAGES (SEPARATE FEATURE)
-Standalone one-page business websites under the main domain. Created via dashboard Business Pages tab. Fields: business name, location, category, tagline, description, phone, WhatsApp, services, opening hours, directions, coordinates, hero image, FAQs, optional blog. URL includes location and name. Business pages link to same-location directories. Homepage displays business pages in Featured Businesses section.
+Standalone one-page websites under main domain. Created via dashboard Business Pages tab. Fields: name, location, category, tagline, description, phone, WhatsApp, services, opening hours, directions, coordinates, hero image, FAQs, optional blog. Link to same-location directories. Displayed on homepage in Featured Businesses section.
 
 ## JSON-LD SCHEMAS
 - Directory pages: LocalBusiness per listing, ItemList, FAQPage, BreadcrumbList
 - Individual listing pages: Niche schema, Article, BreadcrumbList, geo coordinates
-- Business pages: LocalBusiness, FAQPage (if FAQs), Article (if blog)
+- Business pages: LocalBusiness, FAQPage, Article
 - All schemas include addressCountry: "KE"
 
 ## ALL FILES
-src/lib/registry.ts — Regex patterns mapping directory prefixes to niche configs with priceSuffix
-src/lib/firestore.ts — Firebase Admin SDK, TypeScript interfaces, directory functions, business functions (getAllBusinessSlugs, getBusinessData), Markdown parsing with XSS sanitization
-src/lib/schema.ts — JSON-LD generators for all 5 niches + Article + FAQPage + ItemList
-src/layouts/BaseLayout.astro — HTML shell, meta tags, OG tags, geo meta tags, global CSS
-src/components/Header.astro — Breadcrumbs with BreadcrumbList JSON-LD
-src/components/Footer.astro — Copyright, nav links to Home, About, Privacy
+src/lib/registry.ts — Regex patterns per niche with priceSuffix
+src/lib/firestore.ts — Firebase Admin, types, directory+business functions, Markdown parsing with XSS sanitization
+src/lib/schema.ts — JSON-LD generators (5 niches + Article + FAQPage + ItemList)
+src/layouts/BaseLayout.astro — HTML shell, favicon link, geo meta tags, global CSS (color:transparent on img to hide alt text during loading)
+src/components/Header.astro — Breadcrumbs with conditional JSON-LD (only if crumbs have URLs)
+src/components/Footer.astro — Copyright "Kenya Accommodation & Business Directory", nav links, phone/WhatsApp
 src/components/LocationIntro.astro — H1, hero image, description
-src/components/TableOfContents.astro — Anchor link navigation
-src/components/PhoneButton.astro — Green Call button (no number, equal width 150px)
-src/components/WhatsAppButton.astro — Green WhatsApp button (equal width 150px)
+src/components/TableOfContents.astro — Anchor links
+src/components/PhoneButton.astro — Green Call button (no number, 150px equal width)
+src/components/WhatsAppButton.astro — Green WhatsApp button (150px equal width)
 src/components/WrittenDirections.astro — Yellow directions box
-src/components/MapFacade.astro — Google Maps link (no API key needed)
-src/components/ListingFaqs.astro — Details/summary per-listing FAQs
+src/components/MapFacade.astro — Google Maps link (no API key)
+src/components/ListingFaqs.astro — Details/summary FAQs
 src/components/BlogArticle.astro — Blog with pre-parsed HTML, numbered
 src/components/GlobalFaq.astro — Location-level FAQs
-src/components/niches/GuesthouseListing.astro — Guesthouse card with icons
-src/components/niches/HotelListing.astro — Hotel card with icons
-src/components/niches/ApartmentListing.astro — Apartment card with icons
-src/components/niches/SchoolListing.astro — School card with icons
-src/components/niches/HealthListing.astro — Health card with icons
-src/pages/index.astro — Homepage with directories grid + Featured Businesses section
-src/pages/[directory]/index.astro — Directory page with photo-on-top listing cards
-src/pages/[directory]/[slug].astro — Individual listing page with full details
-src/pages/business/[business].astro — Business page with JSON-LD schema, FAQs, internal links
-src/pages/about.astro — About page with contact details
+src/components/niches/GuesthouseListing.astro — Guesthouse card
+src/components/niches/HotelListing.astro — Hotel card
+src/components/niches/ApartmentListing.astro — Apartment card
+src/components/niches/SchoolListing.astro — School card
+src/components/niches/HealthListing.astro — Health card
+src/pages/index.astro — Homepage with directories + Featured Businesses
+src/pages/[directory]/index.astro — Directory page with photo-on-top cards
+src/pages/[directory]/[slug].astro — Individual listing page
+src/pages/business/[business].astro — Business page with JSON-LD
+src/pages/about.astro — About page
 src/pages/404.astro — Custom 404
 src/pages/privacy.astro — Privacy policy (Kenya DPA)
-src/pages/robots.txt.ts — Dynamic robots.txt
-src/pages/sitemap.xml.ts — Dynamic sitemap (directories + individual listings, equal priority)
-astro.config.mjs — Astro config with passthrough images
-firebase.json — Hosting config with cache headers
-.github/workflows/deploy.yml — CI/CD (schedule + dispatch + workflow_dispatch)
-scripts/check-build.js — Performance and document size checks
+src/pages/robots.txt.ts — robots.txt with kedirectory.co.ke sitemap URL
+src/pages/sitemap.xml.ts — Dynamic sitemap (directories + listings + businesses)
+public/favicon.svg — Dark navy "KE" favicon
+astro.config.mjs — site: kedirectory.co.ke
+firebase.json — Hosting config
+.github/workflows/deploy.yml — CI/CD
+scripts/check-build.js — Performance checks
 
 ## KEY RULES
-- Only published directories and businesses are rendered
+- Only published directories and businesses rendered
 - Drafts invisible to engine and Google
-- URLs never change; premium features added in place
-- Price category displayed publicly; numeric price optional
-- Images direct upload, no Cloud Function processing
+- URLs never change
+- Price category displayed publicly
+- Images direct upload, client-side compression (800px, 70% quality)
 - Markdown parsed at data fetch time
-- Conditional rendering per niche (Astro tree-shakes)
-- getStaticPaths fetches data once, passes via props
-- All icons have null fallbacks
-- Geo meta tags on every directory, individual, and business page
+- Conditional rendering per niche
+- getStaticPaths fetches once, passes via props
+- Icons have null fallbacks
+- Geo meta tags on all pages
 - HTML cache max-age=0 must-revalidate
-- Directory and individual listing pages have equal sitemap priority (0.8)
-- Business pages linked from homepage
-- Phone and WhatsApp buttons equal size (150px min-width, no phone number displayed)
-- Listing cards: photo on top full width, content below
+- Equal sitemap priority (0.8)
+- Phone/WhatsApp buttons equal size
+- Listing cards: photo top, content below
+- Alt text hidden during image loading (color:transparent)
+
+## GOOGLE/BING STATUS
+- Google Search Console: verified, sitemap submitted and success
+- Bing Webmaster Tools: verified
+- Structured data: all valid, no errors
+- First ranking: #1 for "Kenya accommodation directory"
 
 ## GITHUB SECRETS
 FIREBASE_SERVICE_ACCOUNT_BASE64
 FIREBASE_TOKEN
 
 ## DASHBOARD
-Separate project at admin-dashboard-dc821.web.app. Connects to same Firestore and Storage. Dashboard handles directories, listings, and business pages. All buttons have locking to prevent double-clicks. Only name/location required for saving.
+Separate project at admin-dashboard-dc821.web.app. Handles directories, listings, business pages. Button locking prevents double-clicks. Minimal required fields (name/location only).
 
-## POST-LAUNCH TASKS (after domain purchase)
-1. Google Search Console verification and sitemap submission
-2. Bing Webmaster Tools verification
-3. Robots.txt live check
-4. Google Business Profile
-5. Analytics setup
-6. PageSpeed Insights verification
+## V2 PLANNED FEATURES
+1. Multi-photo gallery with dynamic categories
+2. Premium toggle (manual, after M-Pesa payment)
+3. Claim business flow (public button → payment details → notification → verify → owner account)
+4. Business owner dashboard (edit own page)
+5. Gemini-powered blog generator (guided form, EEAT compliant)
 
 ## CONTACT
 WhatsApp: 0741 986 556
