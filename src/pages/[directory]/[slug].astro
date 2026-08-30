@@ -82,7 +82,6 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
   />
 
   <main>
-    {/* Hero Section */}
     <section style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
       {listing.thumbnail && (
         <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading="eager" style="border-radius:0; width:100%; max-height:400px; object-fit:cover;" />
@@ -96,13 +95,11 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
       </div>
     </section>
 
-    {/* Contact Buttons */}
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0;">
       <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
       <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
     </div>
 
-    {/* Quick Facts */}
     {amenities.length > 0 && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
         <h2 style="margin-top:0; font-size:1.3rem;">Amenities & Features</h2>
@@ -140,12 +137,13 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
     <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
     <ListingFaqs faqs={listing.faqs} />
 
-    {/* Collapsible Blog Review */}
     {listing.blog?.title && (
       <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0; overflow:hidden;">
         <details style="border:none; margin:0; padding:0;">
           <summary style="padding:1.25rem; font-size:1.2rem; font-weight:600; color:#804000; cursor:pointer; background:#fff8f0; border-radius:12px 12px 0 0; list-style:none;">
-            📝 Read Full Review: {listing.blog.title}
+            📝 Click to Read Full Review
+            <span style="display:block; font-size:0.9rem; font-weight:400; color:#666; margin-top:0.25rem;">{listing.blog.title}</span>
+            <span style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:#0066cc;">Tap to expand ↓</span>
           </summary>
           <div style="padding:1.25rem; line-height:1.8;">
             <p style="font-style:italic; color:#666; margin-bottom:0.5rem;">{listing.blog.excerpt}</p>
@@ -160,7 +158,6 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
       </section>
     )}
 
-    {/* Back to Directory */}
     <div style="margin:2rem 0; text-align:center;">
       <a href={`/${directoryData.directory}/`} style="display:inline-block; padding:0.75rem 1.5rem; background:#0066cc; color:white; text-decoration:none; border-radius:8px; font-weight:600;">
         ← Back to {dirLabel}
