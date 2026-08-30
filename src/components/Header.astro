@@ -14,13 +14,13 @@ const crumbItems = filteredCrumbs.map((crumb, i) => ({
 }));
 ---
 
-<header>
+<header style="position:sticky; top:0; z-index:100; background:white; border-bottom:1px solid #e8e8e8; box-shadow:0 1px 4px rgba(0,0,0,0.05); padding:0.75rem 1rem; margin:0 -1rem 1.5rem;">
   <nav aria-label="Breadcrumb">
-    <ol style="display:flex; gap:0.5rem; list-style:none; padding:1rem 0; font-size:0.9rem;">
+    <ol style="display:flex; gap:0.35rem; list-style:none; font-size:0.85rem; flex-wrap:wrap;">
       {breadcrumbs.map((crumb, i) => (
         <li>
-          {crumb.url ? <a href={crumb.url}>{crumb.label}</a> : <span>{crumb.label}</span>}
-          {i < breadcrumbs.length - 1 && <span aria-hidden="true"> / </span>}
+          {crumb.url ? <a href={crumb.url} style="color:#0066cc; font-weight:500;">{crumb.label}</a> : <span style="color:#555; font-weight:600;">{crumb.label}</span>}
+          {i < breadcrumbs.length - 1 && <span aria-hidden="true" style="color:#bbb;"> / </span>}
         </li>
       ))}
     </ol>
