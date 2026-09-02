@@ -136,10 +136,10 @@ gallery.forEach((cat: any) => {
                   alt={photo.alt || cat.category} 
                   width="300" height="225" 
                   loading="lazy" 
+                  class="gallery-photo"
                   style="border-radius:8px; width:100%; object-fit:cover; cursor:pointer;" 
                   data-photo-src={photo.src}
                   data-photo-alt={photo.alt || cat.category}
-                  onclick="openLightboxFromAttr(this)"
                 />
               ))}
             </div>
@@ -231,22 +231,16 @@ gallery.forEach((cat: any) => {
 
     {/* Lightbox */}
     <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
-      <button onclick="closeLightbox()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; z-index:10000;">✕</button>
-      <button onclick="prevPhoto()" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">←</button>
+      <button id="lightboxClose" style="position:absolute; top:15px; right:15px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; z-index:10000;">✕</button>
+      <button id="lightboxPrev" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">←</button>
       <img id="lightboxImg" src="" alt="" style="max-width:95%; max-height:85%; object-fit:contain; border-radius:8px;" />
       <p id="lightboxCaption" style="color:white; margin-top:1rem; font-size:0.9rem; text-align:center; padding:0 1rem;"></p>
-      <button onclick="nextPhoto()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">→</button>
+      <button id="lightboxNext" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">→</button>
     </div>
 
     <script>
       const galleryPhotos = {JSON.stringify(allPhotos)};
       let currentPhotoIndex = 0;
-
-      function openLightboxFromAttr(img) {
-        const src = img.getAttribute('data-photo-src');
-        const idx = galleryPhotos.findIndex(p => p.src === src);
-        if (idx >= 0) openLightbox(idx);
-      }
 
       function openLightbox(index) {
         currentPhotoIndex = index;
@@ -278,6 +272,22 @@ gallery.forEach((cat: any) => {
         updateLightbox();
       }
 
+      // Event delegation for gallery photos
+      document.addEventListener('click', function(e) {
+        const img = e.target.closest('.gallery-photo');
+        if (img) {
+          const src = img.getAttribute('data-photo-src');
+          const idx = galleryPhotos.findIndex(p => p.src === src);
+          if (idx >= 0) openLightbox(idx);
+        }
+      });
+
+      // Lightbox button listeners
+      document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+      document.getElementById('lightboxNext').addEventListener('click', nextPhoto);
+      document.getElementById('lightboxPrev').addEventListener('click', prevPhoto);
+
+      // Keyboard navigation
       document.addEventListener('keydown', function(e) {
         if (document.getElementById('lightbox').style.display === 'flex') {
           if (e.key === 'Escape') closeLightbox();
