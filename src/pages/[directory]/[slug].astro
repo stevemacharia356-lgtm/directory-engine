@@ -113,39 +113,22 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
       </div>
     )}
 
-    {/* Photo Gallery - thumbnail categories */}
+    {/* Photo Gallery - collapsible categories only */}
     {isVerified && gallery.length > 0 && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
         <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
-        <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view all photos</p>
-        
-        {/* Category thumbnail cards */}
-        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
-          {gallery.map((cat: any) => (
-            <a href={`#gallery-cat-${cat.category.toLowerCase().replace(/\s+/g, '-')}`} style="text-decoration:none; display:block; width:160px; border-radius:10px; overflow:hidden; border:1px solid #e0e0e0; background:white;">
-              {cat.photos && cat.photos.length > 0 ? (
-                <img src={cat.photos[0].src} alt={cat.photos[0].alt || cat.category} width="160" height="110" loading="lazy" style="width:100%; height:110px; object-fit:cover; border-radius:0;" />
-              ) : (
-                <div style="width:100%; height:110px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">No photo</div>
-              )}
-              <div style="padding:0.5rem; text-align:center;">
-                <span style="font-size:0.85rem; font-weight:600; color:#333;">{cat.category}</span>
-                <span style="display:block; font-size:0.75rem; color:#999;">{cat.photos.length} photos</span>
-              </div>
-            </a>
-          ))}
-        </div>
-
-        {/* Expanded category photos */}
+        <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos</p>
         {gallery.map((cat: any) => (
-          <div id={`gallery-cat-${cat.category.toLowerCase().replace(/\s+/g, '-')}`} style="margin:1rem 0; border-top:1px solid #e8e8e8; padding-top:1rem;">
-            <h3 style="font-size:1.1rem; color:#003d80; margin:0 0 0.5rem 0;">{cat.category}</h3>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem;">
+          <details style="margin:0.5rem 0; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;">
+            <summary style="padding:0.75rem 1rem; cursor:pointer; font-weight:600; color:#003d80; list-style:none; display:flex; align-items:center; gap:0.5rem; background:#f8f8f8;">
+              📁 {cat.category} ({cat.photos.length} photos)
+            </summary>
+            <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem;">
               {cat.photos.map((photo: any) => (
                 <img src={photo.src} alt={photo.alt || cat.category} width="400" height="300" loading="lazy" style="border-radius:8px; width:100%; object-fit:cover;" />
               ))}
             </div>
-          </div>
+          </details>
         ))}
       </section>
     )}
