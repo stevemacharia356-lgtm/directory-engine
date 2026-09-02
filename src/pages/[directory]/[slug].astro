@@ -238,8 +238,8 @@ gallery.forEach((cat: any) => {
       <button id="lightboxNext" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">→</button>
     </div>
 
-    <script>
-      const galleryPhotos = {JSON.stringify(allPhotos)};
+    <script set:html={`
+      const galleryPhotos = ${JSON.stringify(allPhotos)};
       let currentPhotoIndex = 0;
 
       function openLightbox(index) {
@@ -272,7 +272,6 @@ gallery.forEach((cat: any) => {
         updateLightbox();
       }
 
-      // Event delegation for gallery photos
       document.addEventListener('click', function(e) {
         const img = e.target.closest('.gallery-photo');
         if (img) {
@@ -282,12 +281,10 @@ gallery.forEach((cat: any) => {
         }
       });
 
-      // Lightbox button listeners
       document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
       document.getElementById('lightboxNext').addEventListener('click', nextPhoto);
       document.getElementById('lightboxPrev').addEventListener('click', prevPhoto);
 
-      // Keyboard navigation
       document.addEventListener('keydown', function(e) {
         if (document.getElementById('lightbox').style.display === 'flex') {
           if (e.key === 'Escape') closeLightbox();
@@ -295,7 +292,7 @@ gallery.forEach((cat: any) => {
           if (e.key === 'ArrowLeft') prevPhoto();
         }
       });
-    </script>
+    `} />
   </main>
 
   <Footer />
