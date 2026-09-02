@@ -59,6 +59,14 @@ else if (directoryData.nicheSlug === 'school') schema = generateSchoolSchema(lis
 else if (directoryData.nicheSlug === 'health') schema = generateMedicalSchema(listing, directoryData.directory);
 
 const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${Astro.url.origin}/${directoryData.directory}/${listing.slug}/`) : null;
+
+// Build flattened photo array for lightbox
+const allPhotos: any[] = [];
+gallery.forEach((cat: any) => {
+  cat.photos.forEach((photo: any) => {
+    allPhotos.push({ src: photo.src, alt: photo.alt || cat.category, category: cat.category });
+  });
+});
 ---
 
 <BaseLayout
@@ -113,19 +121,28 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
       </div>
     )}
 
-    {/* Photo Gallery - collapsible categories only */}
+    {/* Photo Gallery - collapsible categories with lightbox */}
     {isVerified && gallery.length > 0 && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
         <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
-        <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos</p>
+        <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos. Tap any photo to enlarge.</p>
         {gallery.map((cat: any) => (
           <details style="margin:0.5rem 0; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;">
             <summary style="padding:0.75rem 1rem; cursor:pointer; font-weight:600; color:#003d80; list-style:none; display:flex; align-items:center; gap:0.5rem; background:#f8f8f8;">
               📁 {cat.category} ({cat.photos.length} photos)
             </summary>
-            <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem;">
-              {cat.photos.map((photo: any) => (
-                <img src={photo.src} alt={photo.alt || cat.category} width="400" height="300" loading="lazy" style="border-radius:8px; width:100%; object-fit:cover;" />
+            <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem;">
+              {cat.photos.map((photo: any, photoIdx: number) => (
+                <img 
+                  src={photo.src} 
+                  alt={photo.alt || cat.category} 
+                  width="300" height="225" 
+                  loading="lazy" 
+                  style="border-radius:8px; width:100%; object-fit:cover; cursor:pointer;" 
+                  data-category={cat.category}
+                  data-index={allPhotos.indexOf(photo)}
+                  onclick={`openLightbox(${allPhotos.indexOf(photo)})`}
+                />
               ))}
             </div>
           </details>
@@ -217,3 +234,55 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
 
   <Footer />
 </BaseLayout>
+
+<!-- Lightbox Overlay -->
+<div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+  <button onclick="closeLightbox()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; z-index:10000;">✕</button>
+  <button onclick="prevPhoto()" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">←</button>
+  <img id="lightboxImg" src="" alt="" style="max-width:95%; max-height:85%; object-fit:contain; border-radius:8px;" />
+  <p id="lightboxCaption" style="color:white; margin-top:1rem; font-size:0.9rem; text-align:center; padding:0 1rem;"></p>
+  <button onclick="nextPhoto()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">→</button>
+</div>
+
+<script>
+  const photos = {JSON.stringify(allPhotos)};
+  let currentIndex = 0;
+
+  function openLightbox(index) {
+    currentIndex = index;
+    updateLightbox();
+    document.getElementById('lightbox').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  function updateLightbox() {
+    const photo = photos[currentIndex];
+    if (!photo) return;
+    document.getElementById('lightboxImg').src = photo.src;
+    document.getElementById('lightboxImg').alt = photo.alt;
+    document.getElementById('lightboxCaption').textContent = photo.alt + ' (' + (currentIndex + 1) + '/' + photos.length + ')';
+  }
+
+  function nextPhoto() {
+    currentIndex = (currentIndex + 1) % photos.length;
+    updateLightbox();
+  }
+
+  function prevPhoto() {
+    currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+    updateLightbox();
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (document.getElementById('lightbox').style.display === 'flex') {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextPhoto();
+      if (e.key === 'ArrowLeft') prevPhoto();
+    }
+  });
+</script>
