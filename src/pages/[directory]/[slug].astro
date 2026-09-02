@@ -42,6 +42,7 @@ const config = getDirectoryConfig(directoryData.directory);
 const niche = listing.nicheSpecific as any;
 const amenities = niche?.amenities || niche?.facilities || niche?.services || [];
 const isVerified = listing.verified === true;
+const gallery = listing.gallery || [];
 
 const dirLabel = directoryData.categoryTag 
   ? `${directoryData.categoryTag} ${directoryData.nicheDisplay} in ${directoryData.locationDisplay}`
@@ -110,6 +111,31 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
         <span style="background:#25D366; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">💬 WhatsApp</span>
         <span style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:#333; color:white; padding:0.5rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:600;">🔒 Contact for Verified Businesses</span>
       </div>
+    )}
+
+    {/* Photo Gallery - verified only */}
+    {isVerified && gallery.length > 0 && (
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
+        {gallery.map((cat: any) => (
+          <div style="margin:1rem 0;">
+            <h3 style="font-size:1.1rem; color:#003d80; margin:0 0 0.5rem 0;">{cat.category}</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem;">
+              {cat.photos.map((photo: any) => (
+                <img src={photo.src} alt={photo.alt || cat.category} width="400" height="300" loading="lazy" style="border-radius:8px; width:100%; object-fit:cover;" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+    )}
+
+    {!isVerified && gallery.length > 0 && (
+      <section style="background:#f8f8f8; padding:1.25rem; border-radius:12px; margin:1rem 0; text-align:center; position:relative; opacity:0.6;">
+        <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
+        <p style="margin:0.5rem 0;">More photos available for Verified Businesses</p>
+        <span style="display:inline-block; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
+      </section>
     )}
 
     {amenities.length > 0 && (
