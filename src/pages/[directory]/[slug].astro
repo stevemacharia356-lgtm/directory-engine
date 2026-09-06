@@ -57,6 +57,7 @@ else if (directoryData.nicheSlug === 'hotel') schema = generateHotelSchema(listi
 else if (directoryData.nicheSlug === 'apartment') schema = generateApartmentSchema(listing, directoryData.directory);
 else if (directoryData.nicheSlug === 'school') schema = generateSchoolSchema(listing, directoryData.directory);
 else if (directoryData.nicheSlug === 'health') schema = generateMedicalSchema(listing, directoryData.directory);
+else schema = generateLocalBusinessSchema(listing, directoryData.directory);
 
 const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${Astro.url.origin}/${directoryData.directory}/${listing.slug}/`) : null;
 
@@ -101,7 +102,7 @@ gallery.forEach((cat: any) => {
           {isVerified && <span style="background:#1a7a3a; color:white; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; margin-left:0.5rem; vertical-align:middle;">✓ Verified</span>}
         </h1>
         <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
-          {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
+          {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}`}
         </p>
         <p style="font-size:1.05rem; color:#444; margin:0.75rem 0 0;">{listing.summary}</p>
       </div>
@@ -229,7 +230,6 @@ gallery.forEach((cat: any) => {
       </a>
     </div>
 
-    {/* Lightbox */}
     <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
       <button id="lightboxClose" style="position:absolute; top:15px; right:15px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; z-index:10000;">✕</button>
       <button id="lightboxPrev" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.2); border:none; color:white; font-size:2rem; cursor:pointer; padding:0.5rem 1rem; border-radius:50%;">←</button>
