@@ -1,30 +1,40 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 ---
 
 <BaseLayout 
-  title="Privacy Policy | Kenya Accommodation Directory"
-  description="Privacy policy for Kenya Accommodation Directory. Learn how we collect, use, and protect your data."
+  title="Privacy Policy | KeDirectory"
+  description="Privacy policy for KeDirectory — Kenya Accommodation & Business Directory. Learn how we collect, use, and protect your data."
 >
-  <main style="padding:2rem 0;">
-    <h1>Privacy Policy</h1>
-    <p>Last updated: {new Date().toLocaleDateString('en-KE')}</p>
-    
-    <h2>1. Information We Collect</h2>
-    <p>We collect business contact information including phone numbers, physical addresses, and location coordinates for directory listings across Kenya. This data is provided voluntarily by business owners or collected from publicly available sources.</p>
-    
-    <h2>2. How We Use Your Information</h2>
-    <p>Business contact information is displayed publicly on our directory pages to help customers find and contact businesses. We do not sell personal data to third parties.</p>
-    
-    <h2>3. Data Controller</h2>
-    <p>Data Controller Registration Number: [Pending Registration]</p>
-    <p>Physical Address: Kenya</p>
-    <p>Contact: [Your email address]</p>
-    
-    <h2>4. Your Rights</h2>
-    <p>Under the Kenya Data Protection Act 2019, you have the right to access, correct, or request deletion of your business information. To exercise these rights, contact us using the details above.</p>
-    
-    <h2>5. Changes to This Policy</h2>
-    <p>We may update this privacy policy from time to time. Changes will be posted on this page.</p>
+  <Header breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'Privacy Policy' }]} />
+
+  <main style="padding:1rem 0 2rem;">
+    <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+      <h1 style="margin-top:0;">Privacy Policy</h1>
+      <p style="color:#777; font-size:0.9rem;">Last updated: {new Date().toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      
+      <h2>1. Information We Collect</h2>
+      <p>We collect business contact information including phone numbers, physical addresses, and location coordinates for directory listings across Kenya. This data is provided voluntarily by business owners or collected from publicly available sources.</p>
+      
+      <h2>2. How We Use Your Information</h2>
+      <p>Business contact information is displayed publicly on our directory pages to help customers find and contact businesses. We do not sell personal data to third parties.</p>
+      
+      <h2>3. Data Controller</h2>
+      <p><strong>Data Controller:</strong> KeDirectory — Kenya Accommodation & Business Directory</p>
+      <p><strong>Registration Number:</strong> Available on request (ODPC registration in progress)</p>
+      <p><strong>Location:</strong> Kenya</p>
+      <p><strong>Email:</strong> <a href="mailto:stevemacharia356@gmail.com" style="color:#0066cc;">stevemacharia356@gmail.com</a></p>
+      <p><strong>WhatsApp:</strong> <a href="https://wa.me/254741986556" style="color:#25D366;">0741 986 556</a></p>
+      
+      <h2>4. Your Rights</h2>
+      <p>Under the Kenya Data Protection Act 2019, you have the right to access, correct, or request deletion of your business information. To exercise these rights, contact us using the details in section 3.</p>
+      
+      <h2>5. Changes to This Policy</h2>
+      <p>We may update this privacy policy from time to time. Changes will be posted on this page.</p>
+    </section>
   </main>
+
+  <Footer />
 </BaseLayout>
