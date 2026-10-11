@@ -11,7 +11,26 @@ interface Props {
 
 const { listing, reviewAnchorId, index } = Astro.props;
 const niche = listing.nicheSpecific as any;
-const services = niche?.services || niche?.amenities || niche?.facilities || [];
+
+// Find the first array-type field (for custom niches)
+// Known niches: services, amenities, facilities
+// Custom niches: any field with array values
+let services: string[] = [];
+if (niche) {
+  // Try known keys first
+  services = niche?.services || niche?.amenities || niche?.facilities || [];
+  
+  // If no known keys, find any array field
+  if (services.length === 0) {
+    for (const key of Object.keys(niche)) {
+      const value = niche[key];
+      if (Array.isArray(value) && value.length > 0) {
+        services = value;
+        break;
+      }
+    }
+  }
+}
 ---
 
 <section id={listing.slug} style="background:white; border-radius:12px; padding:1.25rem; margin:1.25rem 0; box-shadow:0 2px 8px rgba(0,0,0,0.08); border:1px solid #f0f0f0;">
