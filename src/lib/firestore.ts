@@ -1,4 +1,3 @@
-
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { marked } from 'marked';
@@ -81,6 +80,17 @@ export interface HealthSpecific {
   insuranceAccepted: string;
 }
 
+// ADDITION 1: Custom niche field definitions
+export interface NicheFieldDef {
+  fieldName: string;
+  label: string;
+  inputType: 'text' | 'number' | 'dropdown' | 'checkbox-group' | 'toggle';
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
+  nicheSpecificKey: string;
+}
+
 export type NicheSpecific = 
   | GuesthouseSpecific 
   | HotelSpecific 
@@ -125,6 +135,8 @@ export interface DirectoryData {
   lastEditedAt: string;
   listings: Listing[];
   globalFaqs: Faq[];
+  // ADDITION 2: Custom niche field definitions
+  nicheFieldDefs?: NicheFieldDef[];
 }
 
 export interface BusinessData {
@@ -171,6 +183,20 @@ function validateListing(listing: any, directorySlug: string): Listing | null {
   }
 }
 
+// ADDITION 3: Fetch niche field definitions from Firestore
+export async function getNicheFieldDefs(nicheSlug: string): Promise<NicheFieldDef[] | null> {
+  try {
+    const doc = await db.collection('nicheFields').doc(nicheSlug.toLowerCase()).get();
+    if (!doc.exists) return null;
+    const data = doc.data();
+    if (!data || !data.fields) return null;
+    return data.fields as NicheFieldDef[];
+  } catch (error) {
+    console.error(`Failed to fetch niche fields for ${nicheSlug}:`, error);
+    return null;
+  }
+}
+
 export async function getDirectoryData(directory: string): Promise<DirectoryData | null> {
   try {
     const doc = await db.collection('directories').doc(directory).get();
@@ -199,6 +225,15 @@ export async function getDirectoryData(directory: string): Promise<DirectoryData
     
     if (!data.globalFaqs || !Array.isArray(data.globalFaqs)) {
       data.globalFaqs = [];
+    }
+
+    // ADDITION 4: Load niche field definitions for custom niches
+    const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
+    if (!knownNiches.includes(data.nicheSlug)) {
+      const fieldDefs = await getNicheFieldDefs(data.nicheSlug);
+      if (fieldDefs) {
+        data.nicheFieldDefs = fieldDefs;
+      }
     }
     
     return data;
