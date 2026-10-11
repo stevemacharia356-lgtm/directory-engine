@@ -44,6 +44,11 @@ const amenities = niche?.amenities || niche?.facilities || niche?.services || []
 const isVerified = listing.verified === true;
 const gallery = listing.gallery || [];
 
+// Determine if this is a known niche (has hardcoded rendering)
+const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
+const isKnownNiche = knownNiches.includes(directoryData.nicheSlug);
+const customFieldDefs = directoryData.nicheFieldDefs || [];
+
 const dirLabel = directoryData.categoryTag 
   ? `${directoryData.categoryTag} ${directoryData.nicheDisplay} in ${directoryData.locationDisplay}`
   : `${directoryData.nicheDisplay} in ${directoryData.locationDisplay}`;
@@ -186,6 +191,46 @@ gallery.forEach((cat: any) => {
           {niche?.visitingHours && <p style="margin:0.35rem 0;"><strong>Visiting Hours:</strong> {niche.visitingHours}</p>}
           {niche?.emergency != null && <p style="margin:0.35rem 0;"><strong>Emergency Services:</strong> {niche.emergency ? 'Yes' : 'No'}</p>}
           {niche?.insuranceAccepted && <p style="margin:0.35rem 0;"><strong>Insurance:</strong> {niche.insuranceAccepted}</p>}
+        </div>
+      </section>
+    )}
+
+    {/* NEW: Custom niche details (dynamic) */}
+    {!isKnownNiche && customFieldDefs.length > 0 && (
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem;">{directoryData.nicheDisplay} Details</h2>
+        <div style="margin-top:0.75rem;">
+          {customFieldDefs.map((field: any) => {
+            const value = niche?.[field.nicheSpecificKey];
+            if (value === undefined || value === null || value === '') return null;
+            
+            // Handle arrays (checkbox-group)
+            if (Array.isArray(value)) {
+              if (value.length === 0) return null;
+              return (
+                <div style="margin:0.75rem 0;">
+                  <p style="margin:0 0 0.35rem 0;"><strong>{field.label}:</strong></p>
+                  <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                    {value.map((item: string) => (
+                      <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {item}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            
+            // Handle booleans (toggle)
+            if (typeof value === 'boolean') {
+              return (
+                <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> {value ? 'Yes' : 'No'}</p>
+              );
+            }
+            
+            // Handle text/number/dropdown
+            return (
+              <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> {value}</p>
+            );
+          })}
         </div>
       </section>
     )}
