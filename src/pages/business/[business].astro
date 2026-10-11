@@ -10,10 +10,31 @@ import { getAllBusinessSlugs, getBusinessData, getAllDirectorySlugs, getDirector
 
 export async function getStaticPaths() {
   const slugs = await getAllBusinessSlugs();
-  return slugs.map(slug => ({ params: { business: slug } }));
+  const allSlugs = await getAllBusinessSlugs();
+  
+  const paths = [];
+  for (const slug of slugs) {
+    // Fetch all other businesses for related links
+    const otherBusinesses = [];
+    for (const otherSlug of allSlugs) {
+      if (otherSlug === slug) continue;
+      const otherBiz = await getBusinessData(otherSlug);
+      if (otherBiz) {
+        otherBusinesses.push({ slug: otherSlug, ...otherBiz });
+      }
+    }
+    
+    paths.push({ 
+      params: { business: slug },
+      props: { otherBusinesses }
+    });
+  }
+  
+  return paths;
 }
 
 const { business } = Astro.params;
+const { otherBusinesses } = Astro.props;
 const data = await getBusinessData(business!);
 
 if (!data) {
@@ -23,6 +44,7 @@ if (!data) {
 const isVerified = data.verified === true;
 const gallery = data.gallery || [];
 
+// Related directories at same location
 const allDirs = await getAllDirectorySlugs();
 const relatedDirs = [];
 for (const dirSlug of allDirs) {
@@ -31,6 +53,18 @@ for (const dirSlug of allDirs) {
     relatedDirs.push(dirData);
   }
 }
+
+// Related businesses: same location OR same category
+const sameLocationBiz = (otherBusinesses || []).filter(
+  (b: any) => b.location && data.location && 
+  b.location.toLowerCase() === data.location.toLowerCase()
+);
+
+const sameCategoryBiz = (otherBusinesses || []).filter(
+  (b: any) => b.category && data.category && 
+  b.category.toLowerCase() === data.category.toLowerCase() &&
+  b.location?.toLowerCase() !== data.location?.toLowerCase()
+);
 
 const pageTitle = data.name + ' — ' + (data.tagline || 'Welcome');
 const pageDescription = data.description?.substring(0, 160) || '';
@@ -237,13 +271,45 @@ gallery.forEach((cat: any) => {
       </section>
     )}
 
+    {/* Related directories at same location */}
     {relatedDirs.length > 0 && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">Explore More in {data.location}</h2>
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+        <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">📍 Explore Directories in {data.location}</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Browse other categories in {data.location}.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
           {relatedDirs.map((dir: any) => (
             <a href={`/${dir.directory}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
               {dir.nicheDisplay} in {dir.locationDisplay}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* NEW: Same category, other locations */}
+    {sameCategoryBiz.length > 0 && data.category && (
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem; color:#1a7a3a;">🏢 Other {data.category} Businesses in Kenya</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Similar businesses in other locations.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+          {sameCategoryBiz.slice(0, 6).map((biz: any) => (
+            <a href={`/business/${biz.slug}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #1a7a3a; color:#1a7a3a; text-decoration:none; border-radius:20px; font-size:0.9rem;">
+              {biz.name} {biz.location ? `— ${biz.location}` : ''}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* NEW: Other businesses in same location */}
+    {sameLocationBiz.length > 0 && (
+      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
+        <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">🏢 Other Businesses in {data.location}</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Discover more businesses in {data.location}.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+          {sameLocationBiz.slice(0, 6).map((biz: any) => (
+            <a href={`/business/${biz.slug}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
+              {biz.name}
             </a>
           ))}
         </div>
