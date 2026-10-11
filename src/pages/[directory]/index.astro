@@ -1,5 +1,5 @@
 ---
-import { getDirectoryData, getAllDirectorySlugs } from '../../lib/firestore';
+import { getDirectoryData, getAllDirectorySlugs, getRelatedDirectories } from '../../lib/firestore';
 import { getDirectoryConfig } from '../../lib/registry';
 import {
   generateLocalBusinessSchema,
@@ -30,7 +30,18 @@ export async function getStaticPaths() {
     for (let j = 0; j < results.length; j++) {
       const data = results[j];
       if (data) {
-        paths.push({ params: { directory: slugs[i + j] }, props: { directoryData: data } });
+        const dirSlug = slugs[i + j];
+        // NEW: Fetch related directories for internal linking
+        let relatedData = { sameNiche: [], sameLocation: [] };
+        try {
+          relatedData = await getRelatedDirectories(dirSlug, { limit: 8 });
+        } catch (e) {
+          console.warn(`Could not fetch related for ${dirSlug}:`, e);
+        }
+        paths.push({ 
+          params: { directory: dirSlug }, 
+          props: { directoryData: data, relatedData } 
+        });
       }
     }
   }
@@ -38,9 +49,12 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { directoryData } = Astro.props;
+const { directoryData, relatedData } = Astro.props;
 const { nicheSlug, listings, locationDisplay, nicheDisplay } = directoryData;
 const config = getDirectoryConfig(directoryData.directory);
+
+const sameNiche = relatedData?.sameNiche || [];
+const sameLocation = relatedData?.sameLocation || [];
 
 const geoCoords = listings[0]?.coordinates;
 const geoPlacename = `${locationDisplay}, Kenya`;
@@ -148,6 +162,42 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-top:2rem;">
         <h2 style="font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">❓ Frequently Asked Questions</h2>
         <GlobalFaq faqs={directoryData.globalFaqs} />
+      </section>
+    )}
+
+    {/* NEW: Same niche, other locations */}
+    {sameNiche.length > 0 && (
+      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-top:2rem;">
+        <h2 style="font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 {nicheDisplay} in Other Locations</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Explore {nicheDisplay.toLowerCase()} in other Kenyan towns and cities.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+          {sameNiche.map((dir: any) => (
+            <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
+              📍 {dir.nicheDisplay} in {dir.locationDisplay}
+              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
+                {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* NEW: Same location, other niches */}
+    {sameLocation.length > 0 && (
+      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-top:1.5rem;">
+        <h2 style="font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Categories in {locationDisplay}</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Discover other services and businesses in {locationDisplay}.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+          {sameLocation.map((dir: any) => (
+            <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8fff8; border:1px solid #e0ffe0; color:#1a7a3a; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
+              🏢 {dir.nicheDisplay} in {dir.locationDisplay}
+              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
+                {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
+              </div>
+            </a>
+          ))}
+        </div>
       </section>
     )}
   </main>
