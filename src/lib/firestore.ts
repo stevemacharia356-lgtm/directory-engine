@@ -80,7 +80,7 @@ export interface HealthSpecific {
   insuranceAccepted: string;
 }
 
-// ADDITION 1: Custom niche field definitions
+// Custom niche field definitions
 export interface NicheFieldDef {
   fieldName: string;
   label: string;
@@ -135,7 +135,6 @@ export interface DirectoryData {
   lastEditedAt: string;
   listings: Listing[];
   globalFaqs: Faq[];
-  // ADDITION 2: Custom niche field definitions
   nicheFieldDefs?: NicheFieldDef[];
 }
 
@@ -162,6 +161,12 @@ export interface BusinessData {
   lastEditedAt: string;
 }
 
+// Internal linking: related directories
+export interface RelatedDirectories {
+  sameNiche: DirectoryData[];      // Same niche, different locations
+  sameLocation: DirectoryData[];   // Same location, different niches
+}
+
 function sanitizeHtml(html: string): string {
   return html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
@@ -183,7 +188,7 @@ function validateListing(listing: any, directorySlug: string): Listing | null {
   }
 }
 
-// ADDITION 3: Fetch niche field definitions from Firestore
+// Fetch niche field definitions from Firestore
 export async function getNicheFieldDefs(nicheSlug: string): Promise<NicheFieldDef[] | null> {
   try {
     const doc = await db.collection('nicheFields').doc(nicheSlug.toLowerCase()).get();
@@ -227,7 +232,7 @@ export async function getDirectoryData(directory: string): Promise<DirectoryData
       data.globalFaqs = [];
     }
 
-    // ADDITION 4: Load niche field definitions for custom niches
+    // Load niche field definitions for custom niches
     const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
     if (!knownNiches.includes(data.nicheSlug)) {
       const fieldDefs = await getNicheFieldDefs(data.nicheSlug);
@@ -293,5 +298,88 @@ export async function getBusinessData(business: string): Promise<BusinessData | 
   } catch (error) {
     console.error(`Failed to fetch business ${business}: ${error}`);
     return null;
+  }
+}
+
+// ============================================
+// INTERNAL LINKING: Get related directories
+// ============================================
+
+/**
+ * Get related directories for internal linking.
+ * Returns:
+ *   - sameNiche: Other directories with the same niche but different locations
+ *   - sameLocation: Other directories in the same location with different niches
+ */
+export async function getRelatedDirectories(
+  directorySlug: string,
+  options: { limit?: number } = {}
+): Promise<RelatedDirectories> {
+  const limit = options.limit || 10;
+  
+  try {
+    // Get current directory to know its niche and location
+    const currentDoc = await db.collection('directories').doc(directorySlug).get();
+    if (!currentDoc.exists) {
+      return { sameNiche: [], sameLocation: [] };
+    }
+    
+    const current = currentDoc.data() as DirectoryData;
+    if (!current || !current.nicheSlug || !current.location) {
+      return { sameNiche: [], sameLocation: [] };
+    }
+    
+    // Fetch all published directories
+    const snapshot = await db.collection('directories')
+      .where('status', '==', 'published')
+      .select('directory', 'nicheSlug', 'nicheDisplay', 'location', 'locationDisplay', 'heroImage', 'heroImageAlt', 'listings')
+      .get();
+    
+    const sameNiche: DirectoryData[] = [];
+    const sameLocation: DirectoryData[] = [];
+    
+    for (const doc of snapshot.docs) {
+      // Skip the current directory
+      if (doc.id === directorySlug) continue;
+      
+      const data = doc.data() as Partial<DirectoryData>;
+      if (!data) continue;
+      
+      const dirData: DirectoryData = {
+        directory: doc.id,
+        nicheSlug: data.nicheSlug || '',
+        nicheDisplay: data.nicheDisplay || '',
+        location: data.location || '',
+        locationDisplay: data.locationDisplay || '',
+        locationDescription: '',
+        heroImage: data.heroImage || '',
+        heroImageAlt: data.heroImageAlt || '',
+        heroImageStatus: '',
+        status: 'published',
+        lastModified: '',
+        lastEditedAt: '',
+        listings: data.listings || [],
+        globalFaqs: []
+      };
+      
+      // Same niche, different location
+      if (data.nicheSlug === current.nicheSlug && data.location !== current.location) {
+        if (sameNiche.length < limit) {
+          sameNiche.push(dirData);
+        }
+      }
+      
+      // Same location, different niche
+      if (data.location === current.location && data.nicheSlug !== current.nicheSlug) {
+        if (sameLocation.length < limit) {
+          sameLocation.push(dirData);
+        }
+      }
+    }
+    
+    return { sameNiche, sameLocation };
+  } catch (error) {
+    console.error(`Failed to get related directories for ${directorySlug}:`, error);
+    return { sameNiche: [], sameLocation: [] };
   }
 }
