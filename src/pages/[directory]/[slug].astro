@@ -1,5 +1,5 @@
 ---
-import { getDirectoryData, getAllDirectorySlugs } from '../../lib/firestore';
+import { getDirectoryData, getAllDirectorySlugs, getRelatedDirectories } from '../../lib/firestore';
 import { getDirectoryConfig } from '../../lib/registry';
 import {
   generateLocalBusinessSchema,
@@ -25,10 +25,26 @@ export async function getStaticPaths() {
   for (const dirSlug of slugs) {
     const data = await getDirectoryData(dirSlug);
     if (data && data.listings) {
+      // NEW: Fetch related directories for internal linking
+      let relatedData = { sameNiche: [], sameLocation: [] };
+      try {
+        relatedData = await getRelatedDirectories(dirSlug, { limit: 6 });
+      } catch (e) {
+        console.warn(`Could not fetch related for ${dirSlug}:`, e);
+      }
+      
       for (const listing of data.listings) {
+        // Other listings in the SAME directory (excluding current)
+        const otherListings = data.listings.filter((l: any) => l.slug !== listing.slug);
+        
         paths.push({
           params: { directory: dirSlug, slug: listing.slug },
-          props: { directoryData: data, listing: listing }
+          props: { 
+            directoryData: data, 
+            listing: listing,
+            relatedData: relatedData,
+            otherListings: otherListings
+          }
         });
       }
     }
@@ -37,12 +53,16 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { directoryData, listing } = Astro.props;
+const { directoryData, listing, relatedData, otherListings } = Astro.props;
 const config = getDirectoryConfig(directoryData.directory);
 const niche = listing.nicheSpecific as any;
 const amenities = niche?.amenities || niche?.facilities || niche?.services || [];
 const isVerified = listing.verified === true;
 const gallery = listing.gallery || [];
+
+const sameNiche = relatedData?.sameNiche || [];
+const sameLocation = relatedData?.sameLocation || [];
+const siblingListings = otherListings || [];
 
 // Determine if this is a known niche (has hardcoded rendering)
 const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
@@ -195,7 +215,7 @@ gallery.forEach((cat: any) => {
       </section>
     )}
 
-    {/* NEW: Custom niche details (dynamic) */}
+    {/* Custom niche details (dynamic) */}
     {!isKnownNiche && customFieldDefs.length > 0 && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
         <h2 style="margin-top:0; font-size:1.3rem;">{directoryData.nicheDisplay} Details</h2>
@@ -204,7 +224,6 @@ gallery.forEach((cat: any) => {
             const value = niche?.[field.nicheSpecificKey];
             if (value === undefined || value === null || value === '') return null;
             
-            // Handle arrays (checkbox-group)
             if (Array.isArray(value)) {
               if (value.length === 0) return null;
               return (
@@ -219,14 +238,12 @@ gallery.forEach((cat: any) => {
               );
             }
             
-            // Handle booleans (toggle)
             if (typeof value === 'boolean') {
               return (
                 <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> {value ? 'Yes' : 'No'}</p>
               );
             }
             
-            // Handle text/number/dropdown
             return (
               <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> {value}</p>
             );
@@ -266,6 +283,60 @@ gallery.forEach((cat: any) => {
             </div>
           </div>
         </details>
+      </section>
+    )}
+
+    {/* NEW: Other listings in same directory */}
+    {siblingListings.length > 0 && (
+      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0;">
+        <h2 style="font-size:1.3rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🔍 More {nicheDisplay} in {locationDisplay}</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Compare with other {nicheDisplay.toLowerCase()} in {locationDisplay}.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+          {siblingListings.slice(0, 6).map((other: any) => (
+            <a href={`/${directoryData.directory}/${other.slug}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
+              🏠 {other.name}
+              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
+                {other.priceCategory || `KSh ${other.priceNumeric?.toLocaleString('en-KE')}`}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* NEW: Same niche in other locations */}
+    {sameNiche.length > 0 && (
+      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
+        <h2 style="font-size:1.3rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 {nicheDisplay} in Other Locations</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Looking for {nicheDisplay.toLowerCase()} elsewhere in Kenya?</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+          {sameNiche.map((dir: any) => (
+            <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
+              📍 {dir.nicheDisplay} in {dir.locationDisplay}
+              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
+                {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* NEW: Other categories in same location */}
+    {sameLocation.length > 0 && (
+      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
+        <h2 style="font-size:1.3rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Categories in {locationDisplay}</h2>
+        <p style="color:#555; margin:0.5rem 0 1rem 0;">Explore other services in {locationDisplay}.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+          {sameLocation.map((dir: any) => (
+            <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8fff8; border:1px solid #e0ffe0; color:#1a7a3a; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
+              🏢 {dir.nicheDisplay} in {dir.locationDisplay}
+              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
+                {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
+              </div>
+            </a>
+          ))}
+        </div>
       </section>
     )}
 
