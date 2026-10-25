@@ -64,54 +64,68 @@ for (const bizSlug of businessSlugs) {
     <h1>Kenya Accommodation & Business Directory</h1>
     <p>Honest reviews and detailed information about accommodations and businesses across Kenya. Click a location to compare options, see photos, and get contact details.</p>
 
-    {/* NEW: Browse by Location */}
-    {locations.length > 0 && (
-      <section style="margin-top:2.5rem;">
-        <h2>🗺️ Browse by Location</h2>
-        <p style="color:#555; margin-top:0.5rem;">Explore all categories in each Kenyan town and city.</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-top:1rem;">
-          {locations.map((loc: any) => (
-            <div style="background:white; border:1px solid #e0e6ff; border-radius:12px; padding:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-              <h3 style="margin:0 0 0.75rem 0; font-size:1.1rem; color:#003d80;">📍 {loc.name}</h3>
-              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
-                {loc.dirs.map((dir: any) => (
-                  <li>
-                    <a href={`/${dir.directory}/`} style="color:#0066cc; text-decoration:none; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; border-bottom:1px dashed #f0f0f0;">
-                      <span>{dir.nicheDisplay}</span>
-                      <span style="color:#999; font-size:0.8rem;">{dir.listings.length} →</span>
-                    </a>
-                  </li>
+    {/* COLLAPSIBLE: Browse by Location & Category */}
+    {(locations.length > 0 || niches.length > 0) && (
+      <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0; overflow:hidden; border:1px solid #e0e0e0;">
+        <summary style="padding:1.25rem; font-size:1.15rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
+          🌐 Browse Directory by Location or Category
+          <span style="font-size:0.8rem; color:#666; font-weight:400; margin-left:auto;">Tap to expand ↓</span>
+        </summary>
+        
+        <div style="padding:1.5rem; background:#fff;">
+          
+          {/* Browse by Location */}
+          {locations.length > 0 && (
+            <section style="margin-bottom:2rem;">
+              <h2 style="font-size:1.3rem; margin-top:0;">🗺️ Browse by Location</h2>
+              <p style="color:#555; margin-top:0.5rem;">Explore all categories in each Kenyan town and city.</p>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-top:1rem;">
+                {locations.map((loc: any) => (
+                  <div style="background:#fafafa; border:1px solid #e0e6ff; border-radius:12px; padding:1.25rem;">
+                    <h3 style="margin:0 0 0.75rem 0; font-size:1.1rem; color:#003d80;">📍 {loc.name}</h3>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
+                      {loc.dirs.map((dir: any) => (
+                        <li>
+                          <a href={`/${dir.directory}/`} style="color:#0066cc; text-decoration:none; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; border-bottom:1px dashed #e0e0e0;">
+                            <span>{dir.nicheDisplay}</span>
+                            <span style="color:#999; font-size:0.8rem;">{dir.listings.length} →</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-    )}
+              </div>
+            </section>
+          )}
 
-    {/* NEW: Browse by Category */}
-    {niches.length > 0 && (
-      <section style="margin-top:2.5rem;">
-        <h2>🏢 Browse by Category</h2>
-        <p style="color:#555; margin-top:0.5rem;">Find the same type of business across all Kenyan locations.</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-top:1rem;">
-          {niches.map((n: any) => (
-            <div style="background:white; border:1px solid #e0ffe0; border-radius:12px; padding:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-              <h3 style="margin:0 0 0.75rem 0; font-size:1.1rem; color:#1a7a3a;">🏢 {n.name}</h3>
-              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
-                {n.dirs.map((dir: any) => (
-                  <li>
-                    <a href={`/${dir.directory}/`} style="color:#0066cc; text-decoration:none; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; border-bottom:1px dashed #f0f0f0;">
-                      <span>{dir.nicheDisplay} in {dir.locationDisplay}</span>
-                      <span style="color:#999; font-size:0.8rem;">{dir.listings.length} →</span>
-                    </a>
-                  </li>
+          {/* Browse by Category */}
+          {niches.length > 0 && (
+            <section>
+              <h2 style="font-size:1.3rem; margin-top:0;">🏢 Browse by Category</h2>
+              <p style="color:#555; margin-top:0.5rem;">Find the same type of business across all Kenyan locations.</p>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-top:1rem;">
+                {niches.map((n: any) => (
+                  <div style="background:#fafafa; border:1px solid #e0ffe0; border-radius:12px; padding:1.25rem;">
+                    <h3 style="margin:0 0 0.75rem 0; font-size:1.1rem; color:#1a7a3a;">🏢 {n.name}</h3>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
+                      {n.dirs.map((dir: any) => (
+                        <li>
+                          <a href={`/${dir.directory}/`} style="color:#0066cc; text-decoration:none; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; border-bottom:1px dashed #e0e0e0;">
+                            <span>{dir.nicheDisplay} in {dir.locationDisplay}</span>
+                            <span style="color:#999; font-size:0.8rem;">{dir.listings.length} →</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
+              </div>
+            </section>
+          )}
+
         </div>
-      </section>
+      </details>
     )}
 
     <h2 style="margin-top:3rem;">📍 All Directories</h2>
