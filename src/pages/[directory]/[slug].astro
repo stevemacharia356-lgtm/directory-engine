@@ -223,10 +223,17 @@ gallery.forEach((cat: any) => {
         <div style="margin-top:0.75rem;">
           {customFieldDefs.map((field: any) => {
             const value = niche?.[field.nicheSpecificKey];
+            
+            // STRICT FILTERING RULE: Skip empty, false, and "Other" values
             if (value === undefined || value === null || value === '') return null;
+            if (value === false) return null;
+            if (typeof value === 'string') {
+              const lower = value.toLowerCase().trim();
+              if (lower === 'other' || lower.includes('other county') || lower.includes('other location') || lower === 'n/a' || lower === 'unknown') return null;
+            }
+            if (Array.isArray(value) && value.length === 0) return null;
             
             if (Array.isArray(value)) {
-              if (value.length === 0) return null;
               return (
                 <div style="margin:0.75rem 0;">
                   <p style="margin:0 0 0.35rem 0;"><strong>{field.label}:</strong></p>
@@ -240,8 +247,9 @@ gallery.forEach((cat: any) => {
             }
             
             if (typeof value === 'boolean') {
+              // If it reaches here, it's true
               return (
-                <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> {value ? 'Yes' : 'No'}</p>
+                <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> Yes</p>
               );
             }
             
