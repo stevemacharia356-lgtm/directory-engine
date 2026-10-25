@@ -22,43 +22,53 @@ const isBusiness = businessName && (phone || whatsapp);
     <a href="/privacy/" style="color:#ffffff; text-decoration:none; font-weight:500;">Privacy</a>
   </nav>
 
-  {isBusiness ? (
-    <p style="font-size:0.85rem;">
+  {isBusiness && (
+    <p style="font-size:0.85rem; margin-bottom:0.5rem;">
       <span style="color:#999;">Contact {businessName}:</span><br/>
       <a href={`tel:${phone}`} style="color:#4da6ff; text-decoration:none; font-weight:bold; margin-right:1rem;">📞 {phoneDisplay || phone}</a>
       {whatsapp && (
         <a href={`https://wa.me/${whatsapp}?text=${encodeURIComponent('Hello ' + businessName + ', I found you on Kedirectory.')}`} target="_blank" rel="noopener" style="color:#25D366; text-decoration:none; font-weight:bold;">💬 WhatsApp</a>
       )}
     </p>
-  ) : (
-    <div>
-      <button id="helplineBtn" style="background:#0066cc; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85rem;">
-        📞 Kedirectory Helpline
-      </button>
-
-      {/* Hidden Modal */}
-      <div id="helplineModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; padding:2rem; border-radius:12px; text-align:center; max-width:300px; width:90%; color:#333;">
-          <h3 style="margin-top:0; color:#0d1b2a;">Kedirectory Helpline</h3>
-          <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">Need help or want to list your business?</p>
-          
-          <a href="tel:+254741986556" style="display:block; background:#28a745; color:white; padding:0.75rem; border-radius:6px; text-decoration:none; font-weight:bold; margin-bottom:0.75rem;">📞 0741 986 556</a>
-          <a href="https://wa.me/254741986556?text=Hello,%20I%20need%20help%20with%20Kedirectory." target="_blank" rel="noopener" style="display:block; background:#25D366; color:white; padding:0.75rem; border-radius:6px; text-decoration:none; font-weight:bold; margin-bottom:0.75rem;">💬 WhatsApp Us</a>
-          
-          <button id="closeModal" style="background:none; border:none; color:#999; text-decoration:underline; cursor:pointer; font-size:0.85rem;">Close</button>
-        </div>
-      </div>
-    </div>
   )}
+
+  <div style="margin-top:0.75rem;">
+    <button id="helplineBtn" style="background:#0066cc; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85rem;">
+      📞 Kedirectory Helpline
+    </button>
+  </div>
+
+  {/* Hidden Modal - Phone number is Base64 encoded so scrapers can't read it from HTML */}
+  <div id="helplineModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:2rem; border-radius:12px; text-align:center; max-width:300px; width:90%; color:#333;">
+      <h3 style="margin-top:0; color:#0d1b2a;">Kedirectory Helpline</h3>
+      <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">Need help or want to list your business?</p>
+      
+      <a id="helplineCall" href="#" style="display:block; background:#28a745; color:white; padding:0.75rem; border-radius:6px; text-decoration:none; font-weight:bold; margin-bottom:0.75rem;">📞 Call Us</a>
+      <a id="helplineWhatsapp" href="#" target="_blank" rel="noopener" style="display:block; background:#25D366; color:white; padding:0.75rem; border-radius:6px; text-decoration:none; font-weight:bold; margin-bottom:0.75rem;">💬 WhatsApp Us</a>
+      
+      <button id="closeModal" style="background:none; border:none; color:#999; text-decoration:underline; cursor:pointer; font-size:0.85rem;">Close</button>
+    </div>
+  </div>
 </footer>
 
 <script>
+  // Base64 encoded phone number to hide it from scrapers
+  const encodedPhone = "KzI1NDc0MTk4NjU1Ng=="; // +254741986556
+  const decodedPhone = atob(encodedPhone);
+
   const btn = document.getElementById('helplineBtn');
   const modal = document.getElementById('helplineModal');
   const closeBtn = document.getElementById('closeModal');
+  const callBtn = document.getElementById('helplineCall');
+  const waBtn = document.getElementById('helplineWhatsapp');
 
   if (btn && modal) {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Set the links dynamically only when clicked
+      callBtn.href = `tel:${decodedPhone}`;
+      waBtn.href = `https://wa.me/${decodedPhone.replace('+', '')}?text=${encodeURIComponent('Hello, I need help with Kedirectory.')}`;
       modal.style.display = 'flex';
     });
     
