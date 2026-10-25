@@ -18,6 +18,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
 import GlobalFaq from '../../components/GlobalFaq.astro';
 import PhoneButton from '../../components/PhoneButton.astro';
 import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import ChatWidget from '../../components/ChatWidget.astro';
 
 export async function getStaticPaths() {
   const slugs = await getAllDirectorySlugs();
@@ -213,6 +214,12 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       </details>
     )}
   </main>
+
+  <ChatWidget 
+    mode="directory" 
+    directoryData={directoryData} 
+    businessName={directoryData.locationDisplay} 
+  />
 
   <Footer />
 </BaseLayout>
