@@ -295,58 +295,61 @@ gallery.forEach((cat: any) => {
       </section>
     )}
 
-    {/* Other listings in same directory */}
-    {siblingListings.length > 0 && (
-      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0;">
-        <h2 style="font-size:1.3rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🔍 More {nicheDisplay} in {locationDisplay}</h2>
-        <p style="color:#555; margin:0.5rem 0 1rem 0;">Compare with other {nicheDisplay.toLowerCase()} in {locationDisplay}.</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
-          {siblingListings.slice(0, 6).map((other: any) => (
-            <a href={`/${directoryData.directory}/${other.slug}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
-              🏠 {other.name}
-              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
-                {other.priceCategory || `KSh ${other.priceNumeric?.toLocaleString('en-KE')}`}
+    {/* COLLAPSIBLE INTERNAL LINKING */}
+    {(siblingListings.length > 0 || sameNiche.length > 0 || sameLocation.length > 0) && (
+      <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0; overflow:hidden; border:1px solid #e0e0e0;">
+        <summary style="padding:1.25rem; font-size:1.15rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
+          🌐 Explore More Options in {locationDisplay} & Other Locations
+          <span style="font-size:0.8rem; color:#666; font-weight:400; margin-left:auto;">Tap to expand ↓</span>
+        </summary>
+        
+        <div style="padding:1.25rem; background:#fff;">
+          {/* Other listings in same directory */}
+          {siblingListings.length > 0 && (
+            <div style="margin-bottom:1.5rem;">
+              <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🔍 More {nicheDisplay} in {locationDisplay}</h3>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem; margin-top:0.75rem;">
+                {siblingListings.slice(0, 6).map((other: any) => (
+                  <a href={`/${directoryData.directory}/${other.slug}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
+                    🏠 {other.name}
+                    <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
+                      {other.priceCategory || `KSh ${other.priceNumeric?.toLocaleString('en-KE')}`}
+                    </div>
+                  </a>
+                ))}
               </div>
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+            </div>
+          )}
 
-    {/* Same niche in other locations */}
-    {sameNiche.length > 0 && (
-      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
-        <h2 style="font-size:1.3rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 {nicheDisplay} in Other Locations</h2>
-        <p style="color:#555; margin:0.5rem 0 1rem 0;">Looking for {nicheDisplay.toLowerCase()} elsewhere in Kenya?</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
-          {sameNiche.map((dir: any) => (
-            <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
-              📍 {dir.nicheDisplay} in {dir.locationDisplay}
-              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
-                {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
+          {/* Same niche in other locations */}
+          {sameNiche.length > 0 && (
+            <div style="margin-bottom:1.5rem;">
+              <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 {nicheDisplay} in Other Locations</h3>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem; margin-top:0.75rem;">
+                {sameNiche.map((dir: any) => (
+                  <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
+                    📍 {dir.nicheDisplay} in {dir.locationDisplay}
+                  </a>
+                ))}
               </div>
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+            </div>
+          )}
 
-    {/* Other categories in same location */}
-    {sameLocation.length > 0 && (
-      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
-        <h2 style="font-size:1.3rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Categories in {locationDisplay}</h2>
-        <p style="color:#555; margin:0.5rem 0 1rem 0;">Explore other services in {locationDisplay}.</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
-          {sameLocation.map((dir: any) => (
-            <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8fff8; border:1px solid #e0ffe0; color:#1a7a3a; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem; transition:all 0.15s;">
-              🏢 {dir.nicheDisplay} in {dir.locationDisplay}
-              <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
-                {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
+          {/* Other categories in same location */}
+          {sameLocation.length > 0 && (
+            <div>
+              <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Categories in {locationDisplay}</h3>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem; margin-top:0.75rem;">
+                {sameLocation.map((dir: any) => (
+                  <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8fff8; border:1px solid #e0ffe0; color:#1a7a3a; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
+                    🏢 {dir.nicheDisplay} in {dir.locationDisplay}
+                  </a>
+                ))}
               </div>
-            </a>
-          ))}
+            </div>
+          )}
         </div>
-      </section>
+      </details>
     )}
 
     <div style="margin:2rem 0; text-align:center;">
