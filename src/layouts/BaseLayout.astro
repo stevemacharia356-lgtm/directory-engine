@@ -68,12 +68,15 @@ const { title, description, ogImage, canonicalURL, lastModified, geoCoordinates,
   <slot />
 
   <!-- Firebase SDK (Required for Chat Widget) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+  <!-- We use is:inline to ensure they load in the exact order, before the widget runs -->
+  <script is:inline src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script is:inline src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 
   <script is:inline>
     // Initialize Firebase using your engine's project config
     const firebaseConfig = {
+      apiKey: "AIzaSyAhCSuSWNX3cgBf8RCzpXr8zvf6IGrJIho", 
+      authDomain: "directory-engine-7a41f.firebaseapp.com",
       projectId: "directory-engine-7a41f"
     };
     if (!firebase.apps.length) {
