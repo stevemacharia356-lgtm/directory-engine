@@ -271,49 +271,58 @@ gallery.forEach((cat: any) => {
       </section>
     )}
 
-    {/* Related directories at same location */}
-    {relatedDirs.length > 0 && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">📍 Explore Directories in {data.location}</h2>
-        <p style="color:#555; margin:0.5rem 0 1rem 0;">Browse other categories in {data.location}.</p>
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-          {relatedDirs.map((dir: any) => (
-            <a href={`/${dir.directory}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
-              {dir.nicheDisplay} in {dir.locationDisplay}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+    {/* COLLAPSIBLE INTERNAL LINKING */}
+    {(relatedDirs.length > 0 || sameCategoryBiz.length > 0 || sameLocationBiz.length > 0) && (
+      <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0; overflow:hidden; border:1px solid #e0e0e0;">
+        <summary style="padding:1.25rem; font-size:1.15rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
+          🌐 Explore More in {data.location}
+          <span style="font-size:0.8rem; color:#666; font-weight:400; margin-left:auto;">Tap to expand ↓</span>
+        </summary>
+        
+        <div style="padding:1.25rem; background:#fff;">
+          {/* Related directories at same location */}
+          {relatedDirs.length > 0 && (
+            <div style="margin-bottom:1.5rem;">
+              <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 Directories in {data.location}</h3>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+                {relatedDirs.map((dir: any) => (
+                  <a href={`/${dir.directory}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
+                    {dir.nicheDisplay} in {dir.locationDisplay}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
-    {/* Same category, other locations */}
-    {sameCategoryBiz.length > 0 && data.category && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem; color:#1a7a3a;">🏢 Other {data.category} Businesses in Kenya</h2>
-        <p style="color:#555; margin:0.5rem 0 1rem 0;">Similar businesses in other locations.</p>
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-          {sameCategoryBiz.slice(0, 6).map((biz: any) => (
-            <a href={`/business/${biz.slug}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #1a7a3a; color:#1a7a3a; text-decoration:none; border-radius:20px; font-size:0.9rem;">
-              {biz.name} {biz.location ? `— ${biz.location}` : ''}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+          {/* Same category, other locations */}
+          {sameCategoryBiz.length > 0 && data.category && (
+            <div style="margin-bottom:1.5rem;">
+              <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other {data.category} Businesses in Kenya</h3>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+                {sameCategoryBiz.slice(0, 6).map((biz: any) => (
+                  <a href={`/business/${biz.slug}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #1a7a3a; color:#1a7a3a; text-decoration:none; border-radius:20px; font-size:0.9rem;">
+                    {biz.name} {biz.location ? `— ${biz.location}` : ''}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
-    {/* Other businesses in same location */}
-    {sameLocationBiz.length > 0 && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">🏢 Other Businesses in {data.location}</h2>
-        <p style="color:#555; margin:0.5rem 0 1rem 0;">Discover more businesses in {data.location}.</p>
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-          {sameLocationBiz.slice(0, 6).map((biz: any) => (
-            <a href={`/business/${biz.slug}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
-              {biz.name}
-            </a>
-          ))}
+          {/* Other businesses in same location */}
+          {sameLocationBiz.length > 0 && (
+            <div>
+              <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Businesses in {data.location}</h3>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+                {sameLocationBiz.slice(0, 6).map((biz: any) => (
+                  <a href={`/business/${biz.slug}/`} style="display:inline-block; padding:0.5rem 1rem; background:white; border:1px solid #0066cc; color:#0066cc; text-decoration:none; border-radius:20px; font-size:0.9rem;">
+                    {biz.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </section>
+      </details>
     )}
 
     <div style="text-align:center; margin:2rem 0;">
