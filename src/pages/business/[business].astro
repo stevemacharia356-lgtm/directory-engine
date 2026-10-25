@@ -286,7 +286,7 @@ gallery.forEach((cat: any) => {
       </section>
     )}
 
-    {/* NEW: Same category, other locations */}
+    {/* Same category, other locations */}
     {sameCategoryBiz.length > 0 && data.category && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
         <h2 style="margin-top:0; font-size:1.3rem; color:#1a7a3a;">🏢 Other {data.category} Businesses in Kenya</h2>
@@ -301,7 +301,7 @@ gallery.forEach((cat: any) => {
       </section>
     )}
 
-    {/* NEW: Other businesses in same location */}
+    {/* Other businesses in same location */}
     {sameLocationBiz.length > 0 && (
       <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0;">
         <h2 style="margin-top:0; font-size:1.3rem; color:#003d80;">🏢 Other Businesses in {data.location}</h2>
@@ -387,5 +387,10 @@ gallery.forEach((cat: any) => {
     `} />
   </main>
 
-  <Footer />
+  <Footer 
+    businessName={data.name}
+    phone={data.phone}
+    phoneDisplay={data.phoneDisplay}
+    whatsapp={data.whatsapp}
+  />
 </BaseLayout>
