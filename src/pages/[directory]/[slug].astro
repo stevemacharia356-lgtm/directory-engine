@@ -17,6 +17,7 @@ import WhatsAppButton from '../../components/WhatsAppButton.astro';
 import WrittenDirections from '../../components/WrittenDirections.astro';
 import MapFacade from '../../components/MapFacade.astro';
 import ListingFaqs from '../../components/ListingFaqs.astro';
+import ChatWidget from '../../components/ChatWidget.astro';
 
 export async function getStaticPaths() {
   const slugs = await getAllDirectorySlugs();
@@ -422,6 +423,12 @@ gallery.forEach((cat: any) => {
       });
     `} />
   </main>
+
+  <ChatWidget 
+    mode="listing" 
+    listingData={listing} 
+    businessName={listing.name} 
+  />
 
   <Footer 
     businessName={listing.name}
