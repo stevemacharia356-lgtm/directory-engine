@@ -29,10 +29,9 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
       <div class="chat-message bot">
         <div class="avatar bot-avatar">AI</div>
         <div class="message-bubble">
-          {mode === 'directory' 
-            ? `Hello! I'm the <strong>Kedirectory AI assistant</strong> for <strong>${directoryData?.nicheDisplay} in ${directoryData?.locationDisplay}</strong>.<br><br>Ask me to compare prices, find a specific amenity, or recommend a place!`
-            : `Hello! I'm the <strong>Kedirectory AI assistant</strong> for <strong>${businessName}</strong>.<br><br>Ask me anything about their services, location, or hours!`
-          }
+          Hello! I'm the <strong>Kedirectory AI assistant</strong> for <strong>{mode === 'directory' ? `${directoryData?.nicheDisplay} in ${directoryData?.locationDisplay}` : businessName}</strong>.
+          <br /><br />
+          {mode === 'directory' ? 'Ask me to compare prices, find a specific amenity, or recommend a place!' : 'Ask me anything about their services, location, or hours!'}
         </div>
       </div>
     </div>
