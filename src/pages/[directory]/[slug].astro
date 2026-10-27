@@ -139,17 +139,24 @@ gallery.forEach((cat: any) => {
               </p>
               
               {listing.summary && (
-                listing.summary.length > 180 ? (
-                  <details style="margin-top:0.75rem;">
-                    <summary style="cursor:pointer; color:#0066cc; font-weight:600; font-size:0.95rem; list-style:none; display:flex; align-items:center; gap:0.5rem;">
-                      📝 Read Full Summary
-                      <span style="font-size:0.8rem; color:#999;">↓</span>
-                    </summary>
-                    <p style="font-size:1.05rem; color:#444; margin-top:0.5rem; line-height:1.6;">{listing.summary}</p>
-                  </details>
-                ) : (
-                  <p style="font-size:1.05rem; color:#444; margin:0.75rem 0 0;">{listing.summary}</p>
-                )
+                <div style="margin-top:0.75rem;">
+                  <div 
+                    id="summaryText" 
+                    style={`font-size:1.05rem; color:#444; line-height:1.6; ${listing.summary.length > 180 ? 'display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;' : ''}`}
+                  >
+                    {listing.summary}
+                  </div>
+                  
+                  {listing.summary.length > 180 && (
+                    <button 
+                      onclick="toggleSummary()" 
+                      id="summaryBtn"
+                      style="background:none; border:none; color:#0066cc; font-weight:600; font-size:0.95rem; cursor:pointer; padding:0; margin-top:0.5rem; display:flex; align-items:center; gap:0.25rem;"
+                    >
+                      Read More <span>↓</span>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </section>
