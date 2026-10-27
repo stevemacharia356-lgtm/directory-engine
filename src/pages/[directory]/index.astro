@@ -126,7 +126,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       <p style="color:#555; margin-bottom:1.5rem;">Click on any listing for full details, photos, reviews, and contact information.</p>
       
       {listings.map((listing: any, idx: number) => {
-        // If we have an AI layout, use the compact card. Otherwise, use the default.
+        // If we have an AI layout, use the compact card. Otherwise, use the default compact card.
         const cardFields = nicheLayout?.directoryCard;
         const isCustomCard = cardFields && cardFields.length > 0;
 
@@ -134,7 +134,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
           <div id={listing.slug} style="background:white; border-radius:12px; padding:1.25rem; margin:1.25rem 0; box-shadow:0 2px 8px rgba(0,0,0,0.08); border:1px solid #f0f0f0; transition:box-shadow 0.2s;">
             
             {isCustomCard ? (
-              /* AI-DRIVEN CARD */
+              /* AI-DRIVEN CARD (Custom Niches) */
               <>
                 {cardFields.includes('thumbnail') && listing.thumbnail && (
                   <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="200" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:10px; width:100%; height:200px; object-fit:cover; margin-bottom:1rem;" />
@@ -162,17 +162,16 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
                 <p style="margin:0.5rem 0; color:#555; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{listing.summary}</p>
               </>
             ) : (
-              /* DEFAULT CARD (Original 5 Niches) */
+              /* DEFAULT COMPACT CARD (Original 5 Niches - Updated to match UX file) */
               <>
                 {listing.thumbnail && (
-                  <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:10px; width:100%; height:auto; object-fit:cover; margin-bottom:1rem;" />
+                  <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="200" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:10px; width:100%; height:200px; object-fit:cover; margin-bottom:1rem;" />
                 )}
                 
                 <h3 style="margin:0 0 0.5rem 0; font-size:1.25rem; line-height:1.3;">{idx + 1}. {listing.name}</h3>
                 <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.25rem 0; background:#e8f4e8; display:inline-block; padding:0.25rem 0.75rem; border-radius:20px;">
                   {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
                 </p>
-                <p style="margin:0.5rem 0; color:#555;">{listing.summary}</p>
                 
                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0;">
                   {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).slice(0, 4).map((a: string) => (
@@ -182,6 +181,8 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
                     <span style="color:#999; font-size:0.8rem;">+ more</span>
                   )}
                 </div>
+                
+                <p style="margin:0.5rem 0; color:#555; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{listing.summary}</p>
               </>
             )}
 
