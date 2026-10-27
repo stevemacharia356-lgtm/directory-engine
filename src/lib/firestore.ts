@@ -91,6 +91,15 @@ export interface NicheFieldDef {
   nicheSpecificKey: string;
 }
 
+// NEW: Niche Layout Interface
+export interface NicheLayout {
+  directoryCard?: string[];
+  listingPage?: Array<{
+    section: string;
+    fields: string[];
+  }>;
+}
+
 export type NicheSpecific = 
   | GuesthouseSpecific 
   | HotelSpecific 
@@ -136,6 +145,7 @@ export interface DirectoryData {
   listings: Listing[];
   globalFaqs: Faq[];
   nicheFieldDefs?: NicheFieldDef[];
+  nicheLayout?: NicheLayout; // NEW
 }
 
 export interface BusinessData {
@@ -188,14 +198,17 @@ function validateListing(listing: any, directorySlug: string): Listing | null {
   }
 }
 
-// Fetch niche field definitions from Firestore
-export async function getNicheFieldDefs(nicheSlug: string): Promise<NicheFieldDef[] | null> {
+// Fetch niche field definitions AND layout from Firestore
+export async function getNicheFieldDefs(nicheSlug: string): Promise<{ fields: NicheFieldDef[], layout?: NicheLayout } | null> {
   try {
     const doc = await db.collection('nicheFields').doc(nicheSlug.toLowerCase()).get();
     if (!doc.exists) return null;
     const data = doc.data();
     if (!data || !data.fields) return null;
-    return data.fields as NicheFieldDef[];
+    return { 
+      fields: data.fields as NicheFieldDef[],
+      layout: data.layout as NicheLayout | undefined
+    };
   } catch (error) {
     console.error(`Failed to fetch niche fields for ${nicheSlug}:`, error);
     return null;
@@ -235,9 +248,10 @@ export async function getDirectoryData(directory: string): Promise<DirectoryData
     // Load niche field definitions for custom niches
     const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
     if (!knownNiches.includes(data.nicheSlug)) {
-      const fieldDefs = await getNicheFieldDefs(data.nicheSlug);
-      if (fieldDefs) {
-        data.nicheFieldDefs = fieldDefs;
+      const result = await getNicheFieldDefs(data.nicheSlug);
+      if (result) {
+        data.nicheFieldDefs = result.fields;
+        data.nicheLayout = result.layout;
       }
     }
     
@@ -305,12 +319,6 @@ export async function getBusinessData(business: string): Promise<BusinessData | 
 // INTERNAL LINKING: Get related directories
 // ============================================
 
-/**
- * Get related directories for internal linking.
- * Returns:
- *   - sameNiche: Other directories with the same niche but different locations
- *   - sameLocation: Other directories in the same location with different niches
- */
 export async function getRelatedDirectories(
   directorySlug: string,
   options: { limit?: number } = {}
@@ -318,7 +326,6 @@ export async function getRelatedDirectories(
   const limit = options.limit || 10;
   
   try {
-    // Get current directory to know its niche and location
     const currentDoc = await db.collection('directories').doc(directorySlug).get();
     if (!currentDoc.exists) {
       return { sameNiche: [], sameLocation: [] };
@@ -329,7 +336,6 @@ export async function getRelatedDirectories(
       return { sameNiche: [], sameLocation: [] };
     }
     
-    // Fetch all published directories
     const snapshot = await db.collection('directories')
       .where('status', '==', 'published')
       .select('directory', 'nicheSlug', 'nicheDisplay', 'location', 'locationDisplay', 'heroImage', 'heroImageAlt', 'listings')
@@ -339,7 +345,6 @@ export async function getRelatedDirectories(
     const sameLocation: DirectoryData[] = [];
     
     for (const doc of snapshot.docs) {
-      // Skip the current directory
       if (doc.id === directorySlug) continue;
       
       const data = doc.data() as Partial<DirectoryData>;
@@ -362,14 +367,12 @@ export async function getRelatedDirectories(
         globalFaqs: []
       };
       
-      // Same niche, different location
       if (data.nicheSlug === current.nicheSlug && data.location !== current.location) {
         if (sameNiche.length < limit) {
           sameNiche.push(dirData);
         }
       }
       
-      // Same location, different niche
       if (data.location === current.location && data.nicheSlug !== current.nicheSlug) {
         if (sameLocation.length < limit) {
           sameLocation.push(dirData);
