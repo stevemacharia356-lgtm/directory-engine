@@ -4,9 +4,10 @@ export interface Props {
   listingData?: any;
   directoryData?: any;
   businessName?: string;
+  relatedDirectories?: any[];
 }
 
-const { mode, listingData, directoryData, businessName } = Astro.props;
+const { mode, listingData, directoryData, businessName, relatedDirectories } = Astro.props;
 const title = businessName || (directoryData ? directoryData.locationDisplay : 'this site');
 ---
 
@@ -111,7 +112,7 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
   }
 </style>
 
-<script define:vars={{ mode, listingData, directoryData, businessName }}>
+<script define:vars={{ mode, listingData, directoryData, businessName, relatedDirectories }}>
   const toggle = document.getElementById('chatToggle');
   const windowEl = document.getElementById('chatWindow');
   const closeBtn = document.getElementById('chatClose');
@@ -171,7 +172,8 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
         question: question,
         mode: mode,
         listingData: mode === 'listing' ? contextData : null,
-        directoryData: mode === 'directory' ? contextData : null
+        directoryData: mode === 'directory' ? contextData : null,
+        relatedDirectories: mode === 'directory' ? relatedDirectories : null
       });
 
       addMessage(result.data.answer || 'I could not process your question.', 'bot');

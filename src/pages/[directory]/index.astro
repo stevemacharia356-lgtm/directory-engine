@@ -218,6 +218,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
   <ChatWidget 
     mode="directory" 
     directoryData={directoryData} 
+    relatedDirectories={sameLocation}
     businessName={directoryData.locationDisplay} 
   />
 
