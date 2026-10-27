@@ -8,6 +8,9 @@ interface Props {
 }
 
 const { nicheDisplay, locationDisplay, description, heroImage, heroImageAlt } = Astro.props;
+
+// Check if description is long enough to need a toggle (e.g., over 180 chars)
+const isLong = description && description.length > 180;
 ---
 
 <section>
@@ -19,7 +22,26 @@ const { nicheDisplay, locationDisplay, description, heroImage, heroImageAlt } = 
     height="600"
     loading="eager"
     decoding="async"
-    style="border-radius:8px; margin:1rem 0;"
+    style="border-radius:8px; margin:1rem 0; width:100%; height:auto; object-fit:cover;"
   />
-  <p style="font-size:1.1rem;">{description}</p>
+  
+  {description && (
+    isLong ? (
+      <details style="margin-bottom:1.5rem; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #e0e0e0; overflow:hidden;">
+        <summary style="padding:1.25rem; font-size:1rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
+          📖 Read About {locationDisplay}
+          <span style="font-size:0.8rem; color:#666; font-weight:400; margin-left:auto;">Tap to expand ↓</span>
+        </summary>
+        <div style="padding:1.25rem;">
+          {description.split('\n\n').map(paragraph => (
+            <p style="font-size:1.05rem; line-height:1.8; color:#444; margin-bottom:1rem;">{paragraph}</p>
+          ))}
+        </div>
+      </details>
+    ) : (
+      <div style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #e0e0e0; margin-bottom:1.5rem;">
+        <p style="font-size:1.05rem; line-height:1.8; color:#444;">{description}</p>
+      </div>
+    )
+  )}
 </section>
