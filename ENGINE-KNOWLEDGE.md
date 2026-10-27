@@ -1,4 +1,4 @@
-# KNOWLEDGE.md — KEDIRECTORY ENGINE V1.7 (COMPLETE)
+# KNOWLEDGE.md — KEDIRECTORY ENGINE V1.8 (COMPLETE)
 
 ## PROJECT OVERVIEW
 Astro static site engine for Kenya Accommodation & Business Directory. Reads from Firestore, generates pages for unlimited business niches per location plus standalone business pages. Zero hardcoded content. Live at kedirectory.co.ke. Deployed via GitHub Actions to Firebase Hosting.
@@ -20,51 +20,56 @@ Bing Webmaster Tools: verified
 - About: kedirectory.co.ke/about/
 - Privacy: kedirectory.co.ke/privacy/
 
+## AI LAYOUT ENGINE (V1.8) — THE CORE
+The Engine is now **100% driven by AI-generated layouts** stored in Firestore (`nicheFields/{nicheSlug}`).
+- **Dynamic Directory Cards:** Cards are rendered based on the `directoryCard` array (e.g., `["thumbnail", "name", "priceCategory", "amenities"]`). This makes cards compact and scannable (UX Rule #9).
+- **Dynamic Listing Pages:** The `[slug].astro` page is a pure renderer. It loops through the `listingPage` array (e.g., `[hero, decision_facts, details_table, photos, deep_content]`) and renders each section in the exact order Gemini designed.
+- **Unknown Means No:** If a field is empty or null, that section is hidden entirely.
+- **Fallback:** If an AI layout is missing, the Engine uses a `defaultLayout` fallback so nothing breaks.
+- **Helper Function:** `getNicheFieldDefs()` in `src/lib/firestore.ts` now returns BOTH `fields` and `layout`.
+
+## PROGRESSIVE DISCLOSURE (V1.8)
+Following UX Rule #29:
+- **Location Description:** On the Directory page, long descriptions are truncated to 3 lines with a custom "Read More" toggle (`LocationIntro.astro`).
+- **Business Summary:** On the Listing page, long summaries are truncated to 3 lines with a "Read More" toggle in the Hero section.
+- **Internal Linking:** All cross-linking sections are inside `<details>` tags at the bottom of the page.
+
 ## NICHES (UNLIMITED — DYNAMIC)
 Original 5: Guesthouse, Hotel, Apartment, School, Health.
-Now supports ANY niche via GenericListing fallback + dynamic Gemini fields from dashboard.
-Custom field definitions are saved to Firestore (`nicheFields/{nicheSlug}`) and loaded dynamically so they never regenerate on edit.
+Now supports ANY niche via dynamic Gemini fields and layout from dashboard.
+Custom field definitions and layouts are saved to Firestore (`nicheFields/{nicheSlug}`) and loaded dynamically so they never regenerate on edit.
 
 ## AI ASSISTANT CHAT WIDGET (V1.7)
 - **Feature:** Floating chat widget on Listing and Directory pages.
-- **UI:** Built with `ChatWidget.astro`. Renders Markdown (converts `**bold**`) and uses a modern bubble layout (Avatars, User right / AI left).
+- **UI:** Built with `ChatWidget.astro`. Renders Markdown and uses a modern bubble layout.
 - **Listing Mode:** Reads ONLY the specific listing's data. If no answer, it tells the user to call the business's phone number.
-- **Directory Mode:** Reads ALL listings in the directory. Allows users to ask comparison questions (e.g., "Who has WiFi?", "Which is cheapest?").
-- **Firebase:** `BaseLayout.astro` loads `firebase-app-compat`, `firebase-functions-compat`, and initializes with the public API key.
+- **Directory Mode:** Reads ALL listings in the directory AND related directories (other categories in that location).
+- **Firebase:** `BaseLayout.astro` loads Firebase SDK and initializes with the public API key.
 
 ## DYNAMIC FOOTER (V1.6)
 - **Listing & Business Pages:** Shows the specific business's phone number and WhatsApp.
 - **Directory & Home Pages:** Shows a "Kedirectory Helpline" button. Clicking it opens a secure modal with your number (Base64 encoded to prevent scraping).
 
 ## INTERNAL LINKING MESH (V1.6)
-- **Directory Page:** Shows "Other Locations" (same niche) and "Other Categories" (same location) inside a `<details>` collapsible.
-- **Listing Page:** Shows "More [Niche] in [Location]", "Same Niche in Other Locations", and "Other Categories" inside a `<details>` collapsible.
-- **Homepage:** Shows "Browse by Location" and "Browse by Category" inside a `<details>` collapsible.
-- **Business Page:** Shows "Explore Directories in [Location]", "Other [Category] Businesses", and "Other Businesses in [Location]" inside a `<details>` collapsible.
+- Directory, Listing, Homepage, and Business pages all have collapsible internal linking sections to spread SEO authority.
 - **Helper Function:** `getRelatedDirectories()` in `src/lib/firestore.ts`.
 
 ## STRICT CUSTOM NICHE FILTERING (V1.6)
 In `src/pages/[directory]/[slug].astro`, custom niche details are strictly filtered.
 The engine will **HIDE** any field if its value is:
-- `false` (Boolean)
-- `null` or empty string
+- `false` (Boolean), `null` or empty string
 - `"Other"`, `"Other County"`, `"N/A"`
 - Empty arrays
 
 ## PRICE CATEGORIES
 Budget, Mid-range, Premium, Luxury — displayed on public pages. Exact numeric price optional.
 
-## V1.5, V1.6 & V1.7 VISUAL REFRESH (DEPLOYED)
+## VISUAL REFRESH (V1.5 - V1.8)
 - Modern card design: white cards, box-shadow, 12px border-radius
 - Sticky header with white background and shadow
 - Dark navy footer with white text
-- Collapsible blog reviews
-- Images hide alt text during loading
+- Collapsible blog reviews, collapsible internal linking
 - Blue amenity pills, green price badges
-
-## TWO-LEVEL PAGE STRUCTURE
-Directory page: Listing cards with photo, name, price badge, summary, amenity pills, contact buttons, "See Full Details →" link, plus internal linking sections.
-Individual page: Hero section, verified badge, contact buttons, photo gallery, amenities, details, directions, map, FAQs, collapsible blog review, internal linking sections, back-link.
 
 ## JSON-LD SCHEMAS
 - Directory pages: LocalBusiness per listing, ItemList, FAQPage, BreadcrumbList
@@ -74,16 +79,17 @@ Individual page: Hero section, verified badge, contact buttons, photo gallery, a
 
 ## ALL FILES
 src/lib/registry.ts — Regex patterns per niche
-src/lib/firestore.ts — Firebase Admin, types, getRelatedDirectories(), loads custom fields
+src/lib/firestore.ts — Firebase Admin, types, getRelatedDirectories(), loads nicheFieldDefs AND nicheLayout
 src/lib/schema.ts — JSON-LD generators
 src/layouts/BaseLayout.astro — HTML shell, Firebase SDK init
 src/components/Header.astro — Sticky header
-src/components/Footer.astro — Dynamic footer (Business info vs Helpline modal)
+src/components/Footer.astro — Dynamic footer
+src/components/LocationIntro.astro — Truncated location description with Read More toggle
 src/components/ChatWidget.astro — AI Assistant widget
 src/components/niches/GenericListing.astro — Generic card for custom niches
 src/pages/index.astro — Homepage with collapsible Browse sections
-src/pages/[directory]/index.astro — Directory page with collapsible cross-linking and ChatWidget
-src/pages/[directory]/[slug].astro — Individual listing page with cross-linking, strict filtering, and ChatWidget
+src/pages/[directory]/index.astro — Directory page with compact AI-driven cards
+src/pages/[directory]/[slug].astro — Dynamic Listing page (loops through AI listingPage layout)
 src/pages/business/[business].astro — Business page with cross-linking
 astro.config.mjs — site: kedirectory.co.ke
 firebase.json — Hosting config
