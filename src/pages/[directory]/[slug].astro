@@ -26,7 +26,6 @@ export async function getStaticPaths() {
   for (const dirSlug of slugs) {
     const data = await getDirectoryData(dirSlug);
     if (data && data.listings) {
-      // Fetch related directories for internal linking
       let relatedData = { sameNiche: [], sameLocation: [] };
       try {
         relatedData = await getRelatedDirectories(dirSlug, { limit: 6 });
@@ -35,17 +34,10 @@ export async function getStaticPaths() {
       }
       
       for (const listing of data.listings) {
-        // Other listings in the SAME directory (excluding current)
         const otherListings = data.listings.filter((l: any) => l.slug !== listing.slug);
-        
         paths.push({
           params: { directory: dirSlug, slug: listing.slug },
-          props: { 
-            directoryData: data, 
-            listing: listing,
-            relatedData: relatedData,
-            otherListings: otherListings
-          }
+          props: { directoryData: data, listing: listing, relatedData: relatedData, otherListings: otherListings }
         });
       }
     }
@@ -55,10 +47,9 @@ export async function getStaticPaths() {
 }
 
 const { directoryData, listing, relatedData, otherListings } = Astro.props;
-const { nicheDisplay, locationDisplay } = directoryData;
+const { nicheDisplay, locationDisplay, nicheLayout, nicheFieldDefs } = directoryData;
 const config = getDirectoryConfig(directoryData.directory);
 const niche = listing.nicheSpecific as any;
-const amenities = niche?.amenities || niche?.facilities || niche?.services || [];
 const isVerified = listing.verified === true;
 const gallery = listing.gallery || [];
 
@@ -66,10 +57,21 @@ const sameNiche = relatedData?.sameNiche || [];
 const sameLocation = relatedData?.sameLocation || [];
 const siblingListings = otherListings || [];
 
-// Determine if this is a known niche (has hardcoded rendering)
-const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
-const isKnownNiche = knownNiches.includes(directoryData.nicheSlug);
-const customFieldDefs = directoryData.nicheFieldDefs || [];
+// Default layout (for original 5 niches or if AI layout is missing)
+const defaultLayout = {
+  listingPage: [
+    { section: "hero", fields: [] },
+    { section: "primary_actions", fields: [] },
+    { section: "photos", fields: [] },
+    { section: "decision_facts", fields: ["amenities", "rooms", "services"] },
+    { section: "details_table", fields: ["checkIn", "checkOut"] },
+    { section: "location", fields: ["directions", "map"] },
+    { section: "deep_content", fields: ["faqs", "blog"] }
+  ]
+};
+
+// Use AI layout if it exists, otherwise use default
+const layout = nicheLayout?.listingPage || defaultLayout.listingPage;
 
 const dirLabel = directoryData.categoryTag 
   ? `${directoryData.categoryTag} ${nicheDisplay} in ${locationDisplay}`
@@ -119,184 +121,184 @@ gallery.forEach((cat: any) => {
   />
 
   <main>
-    <section style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
-      {listing.thumbnail && (
-        <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading="eager" style="border-radius:0; width:100%; max-height:400px; object-fit:cover;" />
-      )}
-      <div style="padding:1.5rem;">
-        <h1 style="font-size:1.8rem; margin-bottom:0.5rem; line-height:1.3;">
-          {listing.name}
-          {isVerified && <span style="background:#1a7a3a; color:white; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; margin-left:0.5rem; vertical-align:middle;">✓ Verified</span>}
-        </h1>
-        <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
-          {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}`}
-        </p>
-        <p style="font-size:1.05rem; color:#444; margin:0.75rem 0 0;">{listing.summary}</p>
-      </div>
-    </section>
-
-    {isVerified ? (
-      <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0;">
-        <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
-        <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
-      </div>
-    ) : (
-      <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0; position:relative; opacity:0.6;">
-        <span style="background:#28a745; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">📞 Call</span>
-        <span style="background:#25D366; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">💬 WhatsApp</span>
-        <span style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:#333; color:white; padding:0.5rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:600;">🔒 Contact for Verified Businesses</span>
-      </div>
-    )}
-
-    {isVerified && gallery.length > 0 && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
-        <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos. Tap any photo to enlarge.</p>
-        {gallery.map((cat: any) => (
-          <details style="margin:0.5rem 0; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;">
-            <summary style="padding:0.75rem 1rem; cursor:pointer; font-weight:600; color:#003d80; list-style:none; display:flex; align-items:center; gap:0.5rem; background:#f8f8f8;">
-              📁 {cat.category} ({cat.photos.length} photos)
-            </summary>
-            <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem;">
-              {cat.photos.map((photo: any) => (
-                <img 
-                  src={photo.src} 
-                  alt={photo.alt || cat.category} 
-                  width="300" height="225" 
-                  loading="lazy" 
-                  class="gallery-photo"
-                  style="border-radius:8px; width:100%; object-fit:cover; cursor:pointer;" 
-                  data-photo-src={photo.src}
-                  data-photo-alt={photo.alt || cat.category}
-                />
-              ))}
+    {layout.map((section: any) => {
+      // 1. HERO SECTION
+      if (section.section === 'hero') {
+        return (
+          <section style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
+            {listing.thumbnail && (
+              <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading="eager" style="border-radius:0; width:100%; max-height:400px; object-fit:cover;" />
+            )}
+            <div style="padding:1.5rem;">
+              <h1 style="font-size:1.8rem; margin-bottom:0.5rem; line-height:1.3;">
+                {listing.name}
+                {isVerified && <span style="background:#1a7a3a; color:white; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; margin-left:0.5rem; vertical-align:middle;">✓ Verified</span>}
+              </h1>
+              <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
+                {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}`}
+              </p>
+              <p style="font-size:1.05rem; color:#444; margin:0.75rem 0 0;">{listing.summary}</p>
             </div>
-          </details>
-        ))}
-      </section>
-    )}
+          </section>
+        );
+      }
 
-    {!isVerified && gallery.length > 0 && (
-      <section style="background:#f8f8f8; padding:1.25rem; border-radius:12px; margin:1rem 0; text-align:center; position:relative; opacity:0.6;">
-        <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
-        <p style="margin:0.5rem 0;">More photos available for Verified Businesses</p>
-        <span style="display:inline-block; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
-      </section>
-    )}
-
-    {amenities.length > 0 && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem;">Amenities & Features</h2>
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
-          {amenities.map((a: string) => (
-            <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {a}</span>
-          ))}
-        </div>
-      </section>
-    )}
-
-    {niche?.rooms != null && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem;">Details</h2>
-        <div style="margin-top:0.75rem;">
-          <p style="margin:0.35rem 0;"><strong>Rooms:</strong> {niche.rooms}</p>
-          {niche?.checkIn && <p style="margin:0.35rem 0;"><strong>Check-in:</strong> {niche.checkIn}</p>}
-          {niche?.checkOut && <p style="margin:0.35rem 0;"><strong>Check-out:</strong> {niche.checkOut}</p>}
-          {niche?.starRating && <p style="margin:0.35rem 0;"><strong>Star Rating:</strong> {niche.starRating} ⭐</p>}
-          {niche?.apartmentType && <p style="margin:0.35rem 0;"><strong>Type:</strong> {niche.apartmentType}</p>}
-          {niche?.furnished != null && <p style="margin:0.35rem 0;"><strong>Furnished:</strong> {niche.furnished ? 'Yes' : 'No'}</p>}
-          {niche?.schoolType && <p style="margin:0.35rem 0;"><strong>School Type:</strong> {niche.schoolType}</p>}
-          {niche?.curriculum && <p style="margin:0.35rem 0;"><strong>Curriculum:</strong> {niche.curriculum}</p>}
-          {niche?.studentCount != null && <p style="margin:0.35rem 0;"><strong>Students:</strong> {niche.studentCount}</p>}
-          {niche?.facilityType && <p style="margin:0.35rem 0;"><strong>Facility Type:</strong> {niche.facilityType}</p>}
-          {niche?.doctorCount != null && <p style="margin:0.35rem 0;"><strong>Doctors:</strong> {niche.doctorCount}</p>}
-          {niche?.visitingHours && <p style="margin:0.35rem 0;"><strong>Visiting Hours:</strong> {niche.visitingHours}</p>}
-          {niche?.emergency != null && <p style="margin:0.35rem 0;"><strong>Emergency Services:</strong> {niche.emergency ? 'Yes' : 'No'}</p>}
-          {niche?.insuranceAccepted && <p style="margin:0.35rem 0;"><strong>Insurance:</strong> {niche.insuranceAccepted}</p>}
-        </div>
-      </section>
-    )}
-
-    {/* Custom niche details (dynamic) */}
-    {!isKnownNiche && customFieldDefs.length > 0 && (
-      <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-        <h2 style="margin-top:0; font-size:1.3rem;">{nicheDisplay} Details</h2>
-        <div style="margin-top:0.75rem;">
-          {customFieldDefs.map((field: any) => {
-            const value = niche?.[field.nicheSpecificKey];
-            
-            // STRICT FILTERING RULE: Skip empty, false, and "Other" values
-            if (value === undefined || value === null || value === '') return null;
-            if (value === false) return null;
-            if (typeof value === 'string') {
-              const lower = value.toLowerCase().trim();
-              if (lower === 'other' || lower.includes('other county') || lower.includes('other location') || lower === 'n/a' || lower === 'unknown') return null;
-            }
-            if (Array.isArray(value) && value.length === 0) return null;
-            
-            if (Array.isArray(value)) {
-              return (
-                <div style="margin:0.75rem 0;">
-                  <p style="margin:0 0 0.35rem 0;"><strong>{field.label}:</strong></p>
-                  <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-                    {value.map((item: string) => (
-                      <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {item}</span>
-                    ))}
-                  </div>
-                </div>
-              );
-            }
-            
-            if (typeof value === 'boolean') {
-              // If it reaches here, it's true
-              return (
-                <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> Yes</p>
-              );
-            }
-            
-            return (
-              <p style="margin:0.35rem 0;"><strong>{field.label}:</strong> {value}</p>
-            );
-          })}
-        </div>
-      </section>
-    )}
-
-    <WrittenDirections directions={listing.directions} />
-    
-    {isVerified ? (
-      <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
-    ) : (
-      <div style="margin:1rem 0; padding:1rem; background:#f8f8f8; border-radius:10px; text-align:center; position:relative; opacity:0.6;">
-        <p style="margin:0; font-weight:600;">🗺️ Map available for Verified Businesses</p>
-        <span style="display:inline-block; margin-top:0.5rem; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
-      </div>
-    )}
-
-    <ListingFaqs faqs={listing.faqs} />
-
-    {listing.blog?.title && (
-      <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0; overflow:hidden;">
-        <details style="border:none; margin:0; padding:0;">
-          <summary style="padding:1.25rem; font-size:1.2rem; font-weight:600; color:#804000; cursor:pointer; background:#fff8f0; border-radius:12px 12px 0 0; list-style:none;">
-            📝 Click to Read Full Review
-            <span style="display:block; font-size:0.9rem; font-weight:400; color:#666; margin-top:0.25rem;">{listing.blog.title}</span>
-            <span style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:#0066cc;">Tap to expand ↓</span>
-          </summary>
-          <div style="padding:1.25rem; line-height:1.8;">
-            <p style="font-style:italic; color:#666; margin-bottom:0.5rem;">{listing.blog.excerpt}</p>
-            <time datetime={listing.blog.lastModified} style="font-size:0.8rem; color:#999;">
-              🕐 Last updated: {new Date(listing.blog.lastModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </time>
-            <div style="margin-top:1rem;">
-              <Fragment set:html={listing.blog.bodyHtml || ''} />
-            </div>
+      // 2. PRIMARY ACTIONS
+      if (section.section === 'primary_actions') {
+        return isVerified ? (
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0;">
+            <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
+            <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
           </div>
-        </details>
-      </section>
-    )}
+        ) : (
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0; position:relative; opacity:0.6;">
+            <span style="background:#28a745; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">📞 Call</span>
+            <span style="background:#25D366; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">💬 WhatsApp</span>
+            <span style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:#333; color:white; padding:0.5rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:600;">🔒 Contact for Verified Businesses</span>
+          </div>
+        );
+      }
 
-    {/* COLLAPSIBLE INTERNAL LINKING */}
+      // 3. PHOTOS
+      if (section.section === 'photos') {
+        if (gallery.length === 0) return null;
+        return isVerified ? (
+          <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+            <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
+            <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos. Tap any photo to enlarge.</p>
+            {gallery.map((cat: any) => (
+              <details style="margin:0.5rem 0; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;">
+                <summary style="padding:0.75rem 1rem; cursor:pointer; font-weight:600; color:#003d80; list-style:none; display:flex; align-items:center; gap:0.5rem; background:#f8f8f8;">
+                  📁 {cat.category} ({cat.photos.length} photos)
+                </summary>
+                <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem;">
+                  {cat.photos.map((photo: any) => (
+                    <img src={photo.src} alt={photo.alt || cat.category} width="300" height="225" loading="lazy" class="gallery-photo" style="border-radius:8px; width:100%; object-fit:cover; cursor:pointer;" data-photo-src={photo.src} data-photo-alt={photo.alt || cat.category} />
+                  ))}
+                </div>
+              </details>
+            ))}
+          </section>
+        ) : (
+          <section style="background:#f8f8f8; padding:1.25rem; border-radius:12px; margin:1rem 0; text-align:center; position:relative; opacity:0.6;">
+            <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
+            <p style="margin:0.5rem 0;">More photos available for Verified Businesses</p>
+            <span style="display:inline-block; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
+          </section>
+        );
+      }
+
+      // 4. DECISION FACTS (Custom Niche)
+      if (section.section === 'decision_facts') {
+        const fields = section.fields || [];
+        const hasData = fields.some((f: string) => niche?.[f] !== undefined && niche?.[f] !== null && niche?.[f] !== '');
+        if (!hasData) return null;
+
+        return (
+          <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+            <h2 style="margin-top:0; font-size:1.3rem;">Quick Facts</h2>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+              {fields.map((fieldKey: string) => {
+                const value = niche?.[fieldKey];
+                if (value === undefined || value === null || value === '' || value === false) return null;
+                if (Array.isArray(value) && value.length === 0) return null;
+                if (Array.isArray(value)) {
+                  return value.map((v: string) => <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {v}</span>);
+                }
+                return <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {value}</span>;
+              })}
+            </div>
+          </section>
+        );
+      }
+
+      // 5. DETAILS TABLE (Original 5 + Custom)
+      if (section.section === 'details_table') {
+        const fields = section.fields || [];
+        // For original 5 niches, check if they have rooms/checkIn (legacy logic)
+        const isLegacy = directoryData.nicheSlug === 'guesthouse' || directoryData.nicheSlug === 'hotel';
+        if (isLegacy && niche?.rooms == null) return null;
+
+        return (
+          <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
+            <h2 style="margin-top:0; font-size:1.3rem;">Details</h2>
+            <div style="margin-top:0.75rem;">
+              {/* Original 5 specific details */}
+              {niche?.rooms != null && <p style="margin:0.35rem 0;"><strong>Rooms:</strong> {niche.rooms}</p>}
+              {niche?.checkIn && <p style="margin:0.35rem 0;"><strong>Check-in:</strong> {niche.checkIn}</p>}
+              {niche?.checkOut && <p style="margin:0.35rem 0;"><strong>Check-out:</strong> {niche.checkOut}</p>}
+              {niche?.starRating && <p style="margin:0.35rem 0;"><strong>Star Rating:</strong> {niche.starRating} ⭐</p>}
+              {niche?.apartmentType && <p style="margin:0.35rem 0;"><strong>Type:</strong> {niche.apartmentType}</p>}
+              {niche?.schoolType && <p style="margin:0.35rem 0;"><strong>School Type:</strong> {niche.schoolType}</p>}
+              {niche?.curriculum && <p style="margin:0.35rem 0;"><strong>Curriculum:</strong> {niche.curriculum}</p>}
+              {niche?.facilityType && <p style="margin:0.35rem 0;"><strong>Facility Type:</strong> {niche.facilityType}</p>}
+              {niche?.visitingHours && <p style="margin:0.35rem 0;"><strong>Visiting Hours:</strong> {niche.visitingHours}</p>}
+              {niche?.insuranceAccepted && <p style="margin:0.35rem 0;"><strong>Insurance:</strong> {niche.insuranceAccepted}</p>}
+              
+              {/* Custom niche details */}
+              {fields.map((fieldKey: string) => {
+                const value = niche?.[fieldKey];
+                if (value === undefined || value === null || value === '' || value === false) return null;
+                if (typeof value === 'string' && (value.toLowerCase() === 'other' || value.toLowerCase() === 'n/a')) return null;
+                if (Array.isArray(value) && value.length === 0) return null;
+                if (Array.isArray(value)) return null; // Arrays go in decision_facts
+                return <p style="margin:0.35rem 0;"><strong>{fieldKey}:</strong> {value}</p>;
+              })}
+            </div>
+          </section>
+        );
+      }
+
+      // 6. LOCATION (Directions + Map)
+      if (section.section === 'location') {
+        return (
+          <>
+            <WrittenDirections directions={listing.directions} />
+            {isVerified ? (
+              <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
+            ) : (
+              <div style="margin:1rem 0; padding:1rem; background:#f8f8f8; border-radius:10px; text-align:center; position:relative; opacity:0.6;">
+                <p style="margin:0; font-weight:600;">🗺️ Map available for Verified Businesses</p>
+                <span style="display:inline-block; margin-top:0.5rem; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
+              </div>
+            )}
+          </>
+        );
+      }
+
+      // 7. DEEP CONTENT (FAQs + Blog)
+      if (section.section === 'deep_content') {
+        return (
+          <>
+            <ListingFaqs faqs={listing.faqs} />
+            {listing.blog?.title && (
+              <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0; overflow:hidden;">
+                <details style="border:none; margin:0; padding:0;">
+                  <summary style="padding:1.25rem; font-size:1.2rem; font-weight:600; color:#804000; cursor:pointer; background:#fff8f0; border-radius:12px 12px 0 0; list-style:none;">
+                    📝 Click to Read Full Review
+                    <span style="display:block; font-size:0.9rem; font-weight:400; color:#666; margin-top:0.25rem;">{listing.blog.title}</span>
+                    <span style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:#0066cc;">Tap to expand ↓</span>
+                  </summary>
+                  <div style="padding:1.25rem; line-height:1.8;">
+                    <p style="font-style:italic; color:#666; margin-bottom:0.5rem;">{listing.blog.excerpt}</p>
+                    <time datetime={listing.blog.lastModified} style="font-size:0.8rem; color:#999;">
+                      🕐 Last updated: {new Date(listing.blog.lastModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </time>
+                    <div style="margin-top:1rem;">
+                      <Fragment set:html={listing.blog.bodyHtml || ''} />
+                    </div>
+                  </div>
+                </details>
+              </section>
+            )}
+          </>
+        );
+      }
+
+      return null;
+    })}
+
+    {/* COLLAPSIBLE INTERNAL LINKING (Always at bottom) */}
     {(siblingListings.length > 0 || sameNiche.length > 0 || sameLocation.length > 0) && (
       <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0; overflow:hidden; border:1px solid #e0e0e0;">
         <summary style="padding:1.25rem; font-size:1.15rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
@@ -305,7 +307,6 @@ gallery.forEach((cat: any) => {
         </summary>
         
         <div style="padding:1.25rem; background:#fff;">
-          {/* Other listings in same directory */}
           {siblingListings.length > 0 && (
             <div style="margin-bottom:1.5rem;">
               <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🔍 More {nicheDisplay} in {locationDisplay}</h3>
@@ -322,7 +323,6 @@ gallery.forEach((cat: any) => {
             </div>
           )}
 
-          {/* Same niche in other locations */}
           {sameNiche.length > 0 && (
             <div style="margin-bottom:1.5rem;">
               <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 {nicheDisplay} in Other Locations</h3>
@@ -336,7 +336,6 @@ gallery.forEach((cat: any) => {
             </div>
           )}
 
-          {/* Other categories in same location */}
           {sameLocation.length > 0 && (
             <div>
               <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Categories in {locationDisplay}</h3>
