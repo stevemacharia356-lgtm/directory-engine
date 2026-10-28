@@ -38,7 +38,8 @@ const isLong = description && description.length > 180;
       {isLong && (
         <button 
           id="toggleLocationDesc" 
-          onclick="toggleLocation()" 
+          data-location={locationDisplay}
+          onclick="toggleLocation(this)" 
           style="background:none; border:none; color:#0066cc; font-weight:600; font-size:0.95rem; cursor:pointer; padding:0; margin-top:0.5rem; display:flex; align-items:center; gap:0.25rem;"
         >
           Read More about {locationDisplay} <span>↓</span>
@@ -49,9 +50,9 @@ const isLong = description && description.length > 180;
 </section>
 
 <script is:inline>
-  function toggleLocation() {
+  function toggleLocation(btn) {
     const desc = document.getElementById('locationDesc');
-    const btn = document.getElementById('toggleLocationDesc');
+    const locationName = btn.getAttribute('data-location');
     
     if (desc.style.webkitLineClamp === '3' || !desc.style.webkitLineClamp) {
       // Expand
@@ -62,7 +63,7 @@ const isLong = description && description.length > 180;
       // Collapse
       desc.style.display = '-webkit-box';
       desc.style.webkitLineClamp = '3';
-      btn.innerHTML = 'Read More about ' + '{locationDisplay}' + ' <span>↓</span>';
+      btn.innerHTML = 'Read More about ' + locationName + ' <span>↓</span>';
     }
   }
 </script>

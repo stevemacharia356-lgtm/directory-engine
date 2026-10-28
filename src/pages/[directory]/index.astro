@@ -107,6 +107,9 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
   />
 
   <main>
+    {/* MOVED TO TOP: Table of Contents */}
+    <TableOfContents sections={tocSections} />
+
     <LocationIntro 
       nicheDisplay={nicheDisplay}
       locationDisplay={locationDisplay}
@@ -114,8 +117,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       heroImage={directoryData.heroImage}
       heroImageAlt={directoryData.heroImageAlt}
     />
-
-    <TableOfContents sections={tocSections} />
 
     <div style="text-align:center; padding:0.75rem; margin:0.5rem 0 1.5rem 0; color:#777; font-size:0.85rem; background:white; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
       📖 {listings.length} {nicheDisplay.toLowerCase()} listed • {directoryData.globalFaqs?.length || 0} FAQs answered
@@ -126,7 +127,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       <p style="color:#555; margin-bottom:1.5rem;">Click on any listing for full details, photos, reviews, and contact information.</p>
       
       {listings.map((listing: any, idx: number) => {
-        // If we have an AI layout, use the compact card. Otherwise, use the default compact card.
         const cardFields = nicheLayout?.directoryCard;
         const isCustomCard = cardFields && cardFields.length > 0;
 
@@ -162,7 +162,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
                 <p style="margin:0.5rem 0; color:#555; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{listing.summary}</p>
               </>
             ) : (
-              /* DEFAULT COMPACT CARD (Original 5 Niches - Updated to match UX file) */
+              /* DEFAULT COMPACT CARD (Original 5 Niches) */
               <>
                 {listing.thumbnail && (
                   <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="200" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:10px; width:100%; height:200px; object-fit:cover; margin-bottom:1rem;" />
@@ -215,7 +215,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
         </summary>
         
         <div style="padding:1.25rem; background:#fff;">
-          {/* Same niche, other locations */}
           {sameNiche.length > 0 && (
             <div style="margin-bottom:1.5rem;">
               <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">📍 {nicheDisplay} in Other Locations</h3>
@@ -233,7 +232,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
             </div>
           )}
 
-          {/* Same location, other niches */}
           {sameLocation.length > 0 && (
             <div>
               <h3 style="font-size:1.1rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">🏢 Other Categories in {locationDisplay}</h3>
