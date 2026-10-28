@@ -7,11 +7,21 @@ interface Section {
 const { sections = [] } = Astro.props as { sections: Section[] };
 ---
 
-<nav aria-label="Table of Contents" style="background:#f8f8f8; padding:1rem; border-radius:8px; margin:1rem 0;">
-  <h2 style="margin-top:0;">On This Page</h2>
-  <ol>
-    {sections.map(section => (
-      <li><a href={`#${section.id}`}>{section.label}</a></li>
-    ))}
-  </ol>
+<nav aria-label="Table of Contents" style="margin:1rem 0;">
+  <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #e0e0e0; overflow:hidden;">
+    <summary style="padding:1rem 1.25rem; font-size:1.05rem; font-weight:600; color:#003d80; cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; background:#f8f9ff;">
+      <span style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.2rem;">☰</span> On This Page
+      </span>
+      <span style="font-size:0.8rem; color:#666; font-weight:400;">Tap to expand ↓</span>
+    </summary>
+    
+    <div style="padding:1.25rem; background:#fff;">
+      <ol style="margin:0; padding-left:1.25rem; color:#0066cc; font-size:0.95rem; line-height:1.8;">
+        {sections.map(section => (
+          <li style="margin-bottom:0.25rem;"><a href={`#${section.id}`} style="color:#0066cc; text-decoration:none;">{section.label}</a></li>
+        ))}
+      </ol>
+    </div>
+  </details>
 </nav>
