@@ -179,7 +179,7 @@ gallery.forEach((cat: any) => {
         );
       }
 
-      // 3. PHOTOS
+      // 3. PHOTOS (Modern Design)
       if (section.section === 'photos') {
         if (gallery.length === 0) return null;
         return isVerified ? (
@@ -188,10 +188,11 @@ gallery.forEach((cat: any) => {
             <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos. Tap any photo to enlarge.</p>
             {gallery.map((cat: any) => (
               <details style="margin:0.5rem 0; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;">
-                <summary style="padding:0.75rem 1rem; cursor:pointer; font-weight:600; color:#003d80; list-style:none; display:flex; align-items:center; gap:0.5rem; background:#f8f8f8;">
-                  📁 {cat.category} ({cat.photos.length} photos)
+                <summary style="padding:0.85rem 1rem; cursor:pointer; font-weight:600; color:#003d80; list-style:none; display:flex; align-items:center; justify-content:space-between; background:#f8f9ff;">
+                  <span>{cat.category} <span style="font-weight:400; color:#666; font-size:0.85rem;">({cat.photos.length} photos)</span></span>
+                  <span style="font-size:0.8rem; color:#666; font-weight:400;">View ↓</span>
                 </summary>
-                <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem;">
+                <div style="padding:0.75rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem; background:#fff;">
                   {cat.photos.map((photo: any) => (
                     <img src={photo.src} alt={photo.alt || cat.category} width="300" height="225" loading="lazy" class="gallery-photo" style="border-radius:8px; width:100%; object-fit:cover; cursor:pointer;" data-photo-src={photo.src} data-photo-alt={photo.alt || cat.category} />
                   ))}
@@ -292,7 +293,7 @@ gallery.forEach((cat: any) => {
               <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0; overflow:hidden;">
                 <details style="border:none; margin:0; padding:0;">
                   <summary style="padding:1.25rem; font-size:1.2rem; font-weight:600; color:#804000; cursor:pointer; background:#fff8f0; border-radius:12px 12px 0 0; list-style:none;">
-                    📝 Click to Read Full Review
+                    📖 Read the Full Review
                     <span style="display:block; font-size:0.9rem; font-weight:400; color:#666; margin-top:0.25rem;">{listing.blog.title}</span>
                     <span style="display:inline-block; margin-top:0.5rem; font-size:0.8rem; color:#0066cc;">Tap to expand ↓</span>
                   </summary>
@@ -386,6 +387,23 @@ gallery.forEach((cat: any) => {
     <script set:html={`
       const galleryPhotos = ${JSON.stringify(allPhotos)};
       let currentPhotoIndex = 0;
+
+      // FIX: Read More toggle for summary
+      window.toggleSummary = function() {
+        const desc = document.getElementById('summaryText');
+        const btn = document.getElementById('summaryBtn');
+        if (!desc || !btn) return;
+
+        if (desc.style.webkitLineClamp === '3' || !desc.style.webkitLineClamp) {
+          desc.style.display = 'block';
+          desc.style.webkitLineClamp = 'unset';
+          btn.innerHTML = 'Show Less <span>↑</span>';
+        } else {
+          desc.style.display = '-webkit-box';
+          desc.style.webkitLineClamp = '3';
+          btn.innerHTML = 'Read More <span>↓</span>';
+        }
+      };
 
       function openLightbox(index) {
         currentPhotoIndex = index;
