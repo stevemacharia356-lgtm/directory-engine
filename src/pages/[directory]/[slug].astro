@@ -18,6 +18,7 @@ import WrittenDirections from '../../components/WrittenDirections.astro';
 import MapFacade from '../../components/MapFacade.astro';
 import ListingFaqs from '../../components/ListingFaqs.astro';
 import ChatWidget from '../../components/ChatWidget.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 
 export async function getStaticPaths() {
   const slugs = await getAllDirectorySlugs();
@@ -96,6 +97,16 @@ gallery.forEach((cat: any) => {
     allPhotos.push({ src: photo.src, alt: photo.alt || cat.category, category: cat.category });
   });
 });
+
+// On This Page Menu
+const tocSections = [
+  { id: 'hero', label: 'Overview' },
+  { id: 'photos', label: 'Photos' },
+  { id: 'decision_facts', label: 'Quick Facts' },
+  { id: 'details_table', label: 'Details' },
+  { id: 'location', label: 'How to Get There' },
+  { id: 'deep_content', label: 'FAQs & Review' }
+];
 ---
 
 <BaseLayout
@@ -121,15 +132,18 @@ gallery.forEach((cat: any) => {
   />
 
   <main>
+    {/* On This Page Menu */}
+    <TableOfContents sections={tocSections} />
+
     {layout.map((section: any) => {
       // 1. HERO SECTION
       if (section.section === 'hero') {
         return (
-          <section style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
+          <section id="hero" style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:0.75rem;">
             {listing.thumbnail && (
               <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="400" loading="eager" style="border-radius:0; width:100%; max-height:400px; object-fit:cover;" />
             )}
-            <div style="padding:1.5rem;">
+            <div style="padding:1.25rem;">
               <h1 style="font-size:1.8rem; margin-bottom:0.5rem; line-height:1.3;">
                 {listing.name}
                 {isVerified && <span style="background:#1a7a3a; color:white; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; margin-left:0.5rem; vertical-align:middle;">✓ Verified</span>}
@@ -166,12 +180,12 @@ gallery.forEach((cat: any) => {
       // 2. PRIMARY ACTIONS
       if (section.section === 'primary_actions') {
         return isVerified ? (
-          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0;">
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.75rem 0;">
             <PhoneButton phone={listing.phone} display={listing.phoneDisplay} />
             <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
           </div>
         ) : (
-          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0; position:relative; opacity:0.6;">
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:0.75rem 0; position:relative; opacity:0.6;">
             <span style="background:#28a745; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">📞 Call</span>
             <span style="background:#25D366; color:white; padding:0.75rem 1.5rem; border-radius:4px; font-weight:bold; min-width:150px; text-align:center; pointer-events:none;">💬 WhatsApp</span>
             <span style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:#333; color:white; padding:0.5rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:600;">🔒 Contact for Verified Businesses</span>
@@ -179,12 +193,12 @@ gallery.forEach((cat: any) => {
         );
       }
 
-      // 3. PHOTOS (Modern Design)
+      // 3. PHOTOS
       if (section.section === 'photos') {
         if (gallery.length === 0) return null;
         return isVerified ? (
-          <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-            <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
+          <section id="photos" style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0;">
+            <h2 style="margin-top:0; font-size:1.3rem; margin-bottom:0.5rem;">📸 Photo Gallery</h2>
             <p style="color:#666; font-size:0.9rem; margin:0.5rem 0;">Click a category to view photos. Tap any photo to enlarge.</p>
             {gallery.map((cat: any) => (
               <details style="margin:0.5rem 0; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;">
@@ -201,7 +215,7 @@ gallery.forEach((cat: any) => {
             ))}
           </section>
         ) : (
-          <section style="background:#f8f8f8; padding:1.25rem; border-radius:12px; margin:1rem 0; text-align:center; position:relative; opacity:0.6;">
+          <section id="photos" style="background:#f8f8f8; padding:1.25rem; border-radius:12px; margin:0.75rem 0; text-align:center; position:relative; opacity:0.6;">
             <h2 style="margin-top:0; font-size:1.3rem;">📸 Photo Gallery</h2>
             <p style="margin:0.5rem 0;">More photos available for Verified Businesses</p>
             <span style="display:inline-block; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
@@ -209,16 +223,16 @@ gallery.forEach((cat: any) => {
         );
       }
 
-      // 4. DECISION FACTS (Custom Niche)
+      // 4. DECISION FACTS
       if (section.section === 'decision_facts') {
         const fields = section.fields || [];
         const hasData = fields.some((f: string) => niche?.[f] !== undefined && niche?.[f] !== null && niche?.[f] !== '');
         if (!hasData) return null;
 
         return (
-          <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-            <h2 style="margin-top:0; font-size:1.3rem;">Quick Facts</h2>
-            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;">
+          <section id="decision_facts" style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0;">
+            <h2 style="margin-top:0; font-size:1.3rem; margin-bottom:0.5rem;">Quick Facts</h2>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem;">
               {fields.map((fieldKey: string) => {
                 const value = niche?.[fieldKey];
                 if (value === undefined || value === null || value === '' || value === false) return null;
@@ -233,16 +247,16 @@ gallery.forEach((cat: any) => {
         );
       }
 
-      // 5. DETAILS TABLE (Original 5 + Custom)
+      // 5. DETAILS TABLE
       if (section.section === 'details_table') {
         const fields = section.fields || [];
         const isLegacy = directoryData.nicheSlug === 'guesthouse' || directoryData.nicheSlug === 'hotel';
         if (isLegacy && niche?.rooms == null) return null;
 
         return (
-          <section style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1rem 0;">
-            <h2 style="margin-top:0; font-size:1.3rem;">Details</h2>
-            <div style="margin-top:0.75rem;">
+          <section id="details_table" style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0;">
+            <h2 style="margin-top:0; font-size:1.3rem; margin-bottom:0.5rem;">Details</h2>
+            <div style="margin-top:0.5rem;">
               {niche?.rooms != null && <p style="margin:0.35rem 0;"><strong>Rooms:</strong> {niche.rooms}</p>}
               {niche?.checkIn && <p style="margin:0.35rem 0;"><strong>Check-in:</strong> {niche.checkIn}</p>}
               {niche?.checkOut && <p style="margin:0.35rem 0;"><strong>Check-out:</strong> {niche.checkOut}</p>}
@@ -270,27 +284,27 @@ gallery.forEach((cat: any) => {
       // 6. LOCATION
       if (section.section === 'location') {
         return (
-          <>
+          <div id="location" style="margin:0.75rem 0;">
             <WrittenDirections directions={listing.directions} />
             {isVerified ? (
               <MapFacade lat={listing.coordinates.lat} lng={listing.coordinates.lng} name={listing.name} />
             ) : (
-              <div style="margin:1rem 0; padding:1rem; background:#f8f8f8; border-radius:10px; text-align:center; position:relative; opacity:0.6;">
+              <div style="margin-top:0.75rem; padding:1rem; background:#f8f8f8; border-radius:10px; text-align:center; position:relative; opacity:0.6;">
                 <p style="margin:0; font-weight:600;">🗺️ Map available for Verified Businesses</p>
                 <span style="display:inline-block; margin-top:0.5rem; background:#333; color:white; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem;">🔒 Locked</span>
               </div>
             )}
-          </>
+          </div>
         );
       }
 
       // 7. DEEP CONTENT
       if (section.section === 'deep_content') {
         return (
-          <>
+          <div id="deep_content" style="margin:0.75rem 0;">
             <ListingFaqs faqs={listing.faqs} />
             {listing.blog?.title && (
-              <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:1.5rem 0; overflow:hidden;">
+              <section style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0; overflow:hidden;">
                 <details style="border:none; margin:0; padding:0;">
                   <summary style="padding:1.25rem; font-size:1.2rem; font-weight:600; color:#804000; cursor:pointer; background:#fff8f0; border-radius:12px 12px 0 0; list-style:none;">
                     📖 Read the Full Review
@@ -309,7 +323,7 @@ gallery.forEach((cat: any) => {
                 </details>
               </section>
             )}
-          </>
+          </div>
         );
       }
 
@@ -318,7 +332,7 @@ gallery.forEach((cat: any) => {
 
     {/* COLLAPSIBLE INTERNAL LINKING */}
     {(siblingListings.length > 0 || sameNiche.length > 0 || sameLocation.length > 0) && (
-      <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0; overflow:hidden; border:1px solid #e0e0e0;">
+      <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0; overflow:hidden; border:1px solid #e0e0e0;">
         <summary style="padding:1.25rem; font-size:1.15rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
           🌐 Explore More Options in {locationDisplay} & Other Locations
           <span style="font-size:0.8rem; color:#666; font-weight:400; margin-left:auto;">Tap to expand ↓</span>
@@ -388,7 +402,6 @@ gallery.forEach((cat: any) => {
       const galleryPhotos = ${JSON.stringify(allPhotos)};
       let currentPhotoIndex = 0;
 
-      // FIX: Read More toggle for summary
       window.toggleSummary = function() {
         const desc = document.getElementById('summaryText');
         const btn = document.getElementById('summaryBtn');
