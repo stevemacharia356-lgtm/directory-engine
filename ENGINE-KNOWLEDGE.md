@@ -33,6 +33,7 @@ Following UX Rule #29:
 - **Location Description:** On the Directory page, long descriptions are truncated to 3 lines with a custom "Read More" toggle (`LocationIntro.astro`).
 - **Business Summary:** On the Listing page, long summaries are truncated to 3 lines with a "Read More" toggle in the Hero section.
 - **Internal Linking:** All cross-linking sections are inside `<details>` tags at the bottom of the page.
+- **Global FAQs (V1.8, commit 6a18100):** `GlobalFaq.astro` renders directory-level FAQs as a native `<details>` accordion — white card, animated +/× icon, no JS. The component does NOT render its own heading or section wrapper; the parent page (`[directory]/index.astro`) owns the `<h2>❓ Frequently Asked Questions</h2>` and wraps it in `<section id="faq">`. This avoids a duplicate header and provides an in-page anchor for the TOC.
 
 ## NICHES (UNLIMITED — DYNAMIC)
 Original 5: Guesthouse, Hotel, Apartment, School, Health.
@@ -86,14 +87,36 @@ src/components/Header.astro — Sticky header
 src/components/Footer.astro — Dynamic footer
 src/components/LocationIntro.astro — Truncated location description with Read More toggle
 src/components/ChatWidget.astro — AI Assistant widget
+src/components/GlobalFaq.astro — Directory-level FAQ accordion (details/summary, no own heading — parent page renders the h2 and section#faq)
+src/components/ListingFaqs.astro — Listing-level FAQ accordion (same details/summary style)
+src/components/BlogArticle.astro — Renders the Gemini-generated blog article on listing/business pages
+src/components/TableOfContents.astro — Collapsible "On this page" menu (anchors: #faq, etc.)
+src/components/MapFacade.astro — Lazy-loaded map facade (defers map load until user interaction)
+src/components/WrittenDirections.astro — Text directions block on listing pages
+src/components/PhoneButton.astro — Call button; locked for free listings, unlocked for verified/paid
+src/components/WhatsAppButton.astro — WhatsApp button; locked for free listings, unlocked for verified/paid
 src/components/niches/GenericListing.astro — Generic card for custom niches
+src/components/niches/GuesthouseListing.astro — Per-niche card renderer (Guesthouse)
+src/components/niches/HotelListing.astro — Per-niche card renderer (Hotel)
+src/components/niches/ApartmentListing.astro — Per-niche card renderer (Apartment)
+src/components/niches/SchoolListing.astro — Per-niche card renderer (School)
+src/components/niches/HealthListing.astro — Per-niche card renderer (Health)
 src/pages/index.astro — Homepage with collapsible Browse sections
-src/pages/[directory]/index.astro — Directory page with compact AI-driven cards
+src/pages/about.astro — About page
+src/pages/privacy.astro — Privacy page
+src/pages/404.astro — Not found page
+src/pages/robots.txt.ts — Dynamic robots.txt endpoint
+src/pages/sitemap.xml.ts — Dynamic sitemap.xml endpoint
+src/pages/[directory]/index.astro — Directory page with compact AI-driven cards; owns <section id="faq"> and the ❓ heading for GlobalFaq
 src/pages/[directory]/[slug].astro — Dynamic Listing page (loops through AI listingPage layout)
 src/pages/business/[business].astro — Business page with cross-linking
 astro.config.mjs — site: kedirectory.co.ke
 firebase.json — Hosting config
 .github/workflows/deploy.yml — CI/CD
+scripts/check-build.js — Build verification script
+AGENTS.md / CLAUDE.md — AI agent instruction files
+README.md — Repo readme
+tsconfig.json — TypeScript config
 
 ## KEY RULES
 - Only published directories and businesses rendered
