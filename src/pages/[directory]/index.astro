@@ -200,7 +200,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
     </section>
 
     {directoryData.globalFaqs?.length > 0 && (
-      <section style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-top:2rem;">
+      <section id="faq" style="background:white; padding:1.5rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-top:2rem;">
         <h2 style="font-size:1.4rem; margin-top:0; padding-bottom:0.5rem; border-bottom:2px solid #e8e8e8;">❓ Frequently Asked Questions</h2>
         <GlobalFaq faqs={directoryData.globalFaqs} />
       </section>

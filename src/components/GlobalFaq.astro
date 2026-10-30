@@ -4,12 +4,63 @@ import type { Faq } from '../lib/firestore';
 const { faqs = [] } = Astro.props as { faqs: Faq[] };
 ---
 
-<section id="faq" style="border-top:2px solid #e0e0e0; padding-top:2rem;">
-  <h2>Frequently Asked Questions</h2>
+<div id="faq-list">
   {faqs.map(faq => (
-    <details>
-      <summary>{faq.question}</summary>
-      <p style="padding:0.5rem 1rem;">{faq.answer}</p>
+    <details class="faq-item">
+      <summary class="faq-question">
+        <span>{faq.question}</span>
+        <span class="faq-icon" aria-hidden="true">+</span>
+      </summary>
+      <div class="faq-answer">{faq.answer}</div>
     </details>
   ))}
-</section>
+</div>
+
+<style>
+  .faq-item {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .faq-item[open] {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-color: #d0d8ff;
+  }
+  .faq-question {
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #003d80;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+  .faq-icon {
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #0066cc;
+    line-height: 1;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .faq-item[open] .faq-icon {
+    transform: rotate(45deg);
+  }
+  .faq-answer {
+    padding: 0 1.25rem 1rem 1.25rem;
+    color: #444;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 0.75rem;
+  }
+</style>
