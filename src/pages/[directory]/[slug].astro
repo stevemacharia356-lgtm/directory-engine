@@ -107,6 +107,13 @@ const tocSections = [
   { id: 'location', label: 'How to Get There' },
   { id: 'deep_content', label: 'FAQs & Review' }
 ];
+
+// Helper function to format camelCase keys into readable text
+function formatLabel(str: string) {
+  if (!str) return '';
+  const result = str.replace(/([A-Z])/g, ' $1');
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
 ---
 
 <BaseLayout
@@ -226,17 +233,21 @@ const tocSections = [
       // 4. DECISION FACTS
       if (section.section === 'decision_facts') {
         const fields = section.fields || [];
-        const hasData = fields.some((f: string) => niche?.[f] !== undefined && niche?.[f] !== null && niche?.[f] !== '');
-        if (!hasData) return null;
+        
+        // Filter out booleans and empty arrays before checking if hasData
+        const validFields = fields.filter((f: string) => {
+          const v = niche?.[f];
+          return v !== undefined && v !== null && v !== '' && typeof v !== 'boolean' && !(Array.isArray(v) && v.length === 0);
+        });
+
+        if (validFields.length === 0) return null;
 
         return (
           <section id="decision_facts" style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0;">
             <h2 style="margin-top:0; font-size:1.3rem; margin-bottom:0.5rem;">Quick Facts</h2>
             <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem;">
-              {fields.map((fieldKey: string) => {
-                const value = niche?.[fieldKey];
-                if (value === undefined || value === null || value === '' || value === false) return null;
-                if (Array.isArray(value) && value.length === 0) return null;
+              {validFields.map((fieldKey: string) => {
+                const value = niche[fieldKey];
                 if (Array.isArray(value)) {
                   return value.map((v: string) => <span style="background:#f0f4ff; color:#003d80; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.85rem;">✓ {v}</span>);
                 }
@@ -250,8 +261,16 @@ const tocSections = [
       // 5. DETAILS TABLE
       if (section.section === 'details_table') {
         const fields = section.fields || [];
+        
+        // Filter out booleans and empty values
+        const validFields = fields.filter((f: string) => {
+          const v = niche?.[f];
+          return v !== undefined && v !== null && v !== '' && typeof v !== 'boolean' && !(Array.isArray(v) && v.length === 0);
+        });
+
         const isLegacy = directoryData.nicheSlug === 'guesthouse' || directoryData.nicheSlug === 'hotel';
-        if (isLegacy && niche?.rooms == null) return null;
+        if (isLegacy && niche?.rooms == null && validFields.length === 0) return null;
+        if (!isLegacy && validFields.length === 0) return null;
 
         return (
           <section id="details_table" style="background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:0.75rem 0;">
@@ -268,13 +287,14 @@ const tocSections = [
               {niche?.visitingHours && <p style="margin:0.35rem 0;"><strong>Visiting Hours:</strong> {niche.visitingHours}</p>}
               {niche?.insuranceAccepted && <p style="margin:0.35rem 0;"><strong>Insurance:</strong> {niche.insuranceAccepted}</p>}
               
-              {fields.map((fieldKey: string) => {
-                const value = niche?.[fieldKey];
-                if (value === undefined || value === null || value === '' || value === false) return null;
-                if (typeof value === 'string' && (value.toLowerCase() === 'other' || value.toLowerCase() === 'n/a')) return null;
-                if (Array.isArray(value) && value.length === 0) return null;
-                if (Array.isArray(value)) return null;
-                return <p style="margin:0.35rem 0;"><strong>{fieldKey}:</strong> {value}</p>;
+              {validFields.map((fieldKey: string) => {
+                const value = niche[fieldKey];
+                if (Array.isArray(value)) return null; // Arrays are handled in Decision Facts
+                
+                // Format camelCase key into readable text (e.g. orderLeadTime -> Order Lead Time)
+                const displayLabel = formatLabel(fieldKey);
+                
+                return <p style="margin:0.35rem 0;"><strong>{displayLabel}:</strong> {value}</p>;
               })}
             </div>
           </section>
