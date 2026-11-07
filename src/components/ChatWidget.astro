@@ -1,6 +1,6 @@
 ---
 export interface Props {
-  mode: 'listing' | 'directory';
+  mode: 'listing' | 'directory' | 'homepage';
   listingData?: any;
   directoryData?: any;
   businessName?: string;
@@ -8,7 +8,7 @@ export interface Props {
 }
 
 const { mode, listingData, directoryData, businessName, relatedDirectories } = Astro.props;
-const title = businessName || (directoryData ? directoryData.locationDisplay : 'this site');
+const title = businessName || (directoryData ? directoryData.locationDisplay : 'Kedirectory');
 ---
 
 <div class="chat-widget-container">
@@ -30,9 +30,13 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
       <div class="chat-message bot">
         <div class="avatar bot-avatar">AI</div>
         <div class="message-bubble">
-          Hello! I'm the <strong>Kedirectory AI assistant</strong> for <strong>{mode === 'directory' ? `${directoryData?.nicheDisplay} in ${directoryData?.locationDisplay}` : businessName}</strong>.
-          <br /><br />
-          {mode === 'directory' ? 'Ask me to compare prices, find a specific amenity, or recommend a place!' : 'Ask me anything about their services, location, or hours!'}
+          {mode === 'homepage' ? (
+            <>Hello! I am the <strong>Kedirectory Global Assistant</strong>. <br /><br />Ask me to find a specific business, compare prices, or locate a service anywhere in Kenya!</>
+          ) : mode === 'directory' ? (
+            <>Hello! I'm the <strong>Kedirectory AI assistant</strong> for <strong>{directoryData?.nicheDisplay} in {directoryData?.locationDisplay}</strong>.<br /><br />Ask me to compare prices, find a specific amenity, or recommend a place!</>
+          ) : (
+            <>Hello! I'm the <strong>Kedirectory AI assistant</strong> for <strong>{businessName}</strong>.<br /><br />Ask me anything about their services, location, or hours!</>
+          )}
         </div>
       </div>
     </div>
@@ -98,12 +102,8 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
   
   @media (max-width: 600px) {
     .chat-widget-container { bottom: 16px; right: 16px; }
-    
-    /* BIGGER BUTTON ON MOBILE */
     .chat-toggle { padding: 14px 24px; font-size: 16px; }
     .chat-toggle svg { width: 22px; height: 22px; }
-    
-    /* FULL WIDTH CHAT WINDOW */
     .chat-window { width: calc(100vw - 32px); bottom: 80px; height: 80vh; }
   }
 </style>
@@ -129,12 +129,19 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
   toggle.addEventListener('click', toggleChat);
   closeBtn.addEventListener('click', toggleChat);
 
-  async function sendMessage() {
-    const question = input.value.trim();
+  async function sendMessage(prefilledQuestion = null) {
+    const question = prefilledQuestion || input.value.trim();
     if (!question || isWaiting) return;
 
+    // Ensure window is open if triggered externally
+    if (!isOpen) {
+      isOpen = true;
+      windowEl.style.display = 'flex';
+    }
+
     addMessage(question, 'user');
-    input.value = '';
+    if (!prefilledQuestion) input.value = ''; // Clear only if typed manually
+    
     isWaiting = true;
     typing.style.display = 'flex';
     messages.scrollTop = messages.scrollHeight;
@@ -162,6 +169,10 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
           locationDisplay: directoryData.locationDisplay,
           listings: directoryData.listings || []
         };
+      } else if (mode === 'homepage') {
+        // For homepage mode, we don't need to pass massive context upfront. 
+        // The backend Cloud Function will fetch what it needs globally.
+        contextData = null;
       }
 
       const result = await askAssistant({
@@ -212,11 +223,19 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
     messages.scrollTop = messages.scrollHeight;
   }
 
-  sendBtn.addEventListener('click', sendMessage);
+  sendBtn.addEventListener('click', () => sendMessage());
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       sendMessage();
+    }
+  });
+
+  // LISTEN FOR HOMEPAGE SEARCH BAR EVENT
+  window.addEventListener('open-ai-chat', (e) => {
+    const { question } = e.detail;
+    if (question) {
+      sendMessage(question);
     }
   });
 </script>
