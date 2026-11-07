@@ -96,25 +96,6 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
   }
 </style>
 
-<script>
-  import { getApps, initializeApp } from 'firebase/app';
-  import { getFunctions, httpsCallable } from 'firebase/functions';
-
-  // Use the same config as your BaseLayout
-  const firebaseConfig = {
-    apiKey: "AIzaSyCmucbL0gT5rWrZ3O-M4GAnGqA4v9lA2b4", // Make sure this matches your BaseLayout
-    authDomain: "directory-engine-7a41f.firebaseapp.com",
-    projectId: "directory-engine-7a41f",
-    storageBucket: "directory-engine-7a41f.appspot.com",
-    messagingSenderId: "411515509449",
-    appId: "1:411515509449:web:YOUR_APP_ID" // Ensure this is correct
-  };
-
-  if (!getApps().length) {
-    initializeApp(firebaseConfig);
-  }
-</script>
-
 <script define:vars={{ mode, listingData, directoryData, businessName, relatedDirectories }}>
   const toggle = document.getElementById('chatToggle');
   const windowEl = document.getElementById('chatWindow');
@@ -140,7 +121,6 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
     const question = prefilledQuestion || input.value.trim();
     if (!question || isWaiting) return;
 
-    // Ensure window is open if triggered externally
     if (!isOpen) {
       isOpen = true;
       windowEl.style.display = 'flex';
@@ -154,8 +134,9 @@ const title = businessName || (directoryData ? directoryData.locationDisplay : '
     messages.scrollTop = messages.scrollHeight;
 
     try {
-      const functions = getFunctions();
-      const askAssistant = httpsCallable(functions, 'askDirectoryAssistant');
+      // Using the global firebase instance loaded by BaseLayout
+      const functions = firebase.functions();
+      const askAssistant = functions.httpsCallable('askDirectoryAssistant');
 
       let contextData = {};
       if (mode === 'listing' && listingData) {
