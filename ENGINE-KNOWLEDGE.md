@@ -1,4 +1,4 @@
-# KNOWLEDGE.md — KEDIRECTORY ENGINE V1.8 (COMPLETE)
+# KNOWLEDGE.md — KEDIRECTORY ENGINE V1.9 (COMPLETE)
 
 ## PROJECT OVERVIEW
 Astro static site engine for Kenya Accommodation & Business Directory. Reads from Firestore, generates pages for unlimited business niches per location plus standalone business pages. Zero hardcoded content. Live at kedirectory.co.ke. Deployed via GitHub Actions to Firebase Hosting.
@@ -28,6 +28,12 @@ The Engine is now **100% driven by AI-generated layouts** stored in Firestore (`
 - **Fallback:** If an AI layout is missing, the Engine uses a `defaultLayout` fallback so nothing breaks.
 - **Helper Function:** `getNicheFieldDefs()` in `src/lib/firestore.ts` now returns BOTH `fields` and `layout`.
 
+## GLOBAL HOMEPAGE AI (V1.9)
+- **Homepage Design:** Modern, compact hero section with a prominent AI Search Bar (`src/pages/index.astro`).
+- **Search Logic:** When a user types a question in the homepage search bar and hits "Ask AI" (or presses Enter), a custom event (`open-ai-chat`) is dispatched.
+- **Chat Widget Integration:** The `ChatWidget.astro` listens for this event, opens the chat window, and automatically sends the query to the backend in `homepage` mode.
+- **Manual Browse:** The large grid of directories was removed to make the homepage fast. Users now browse via the collapsible "Browse by Location or Category" accordion.
+
 ## PROGRESSIVE DISCLOSURE (V1.8)
 Following UX Rule #29:
 - **Location Description:** On the Directory page, long descriptions are truncated to 3 lines with a custom "Read More" toggle (`LocationIntro.astro`).
@@ -40,11 +46,12 @@ Original 5: Guesthouse, Hotel, Apartment, School, Health.
 Now supports ANY niche via dynamic Gemini fields and layout from dashboard.
 Custom field definitions and layouts are saved to Firestore (`nicheFields/{nicheSlug}`) and loaded dynamically so they never regenerate on edit.
 
-## AI ASSISTANT CHAT WIDGET (V1.7)
-- **Feature:** Floating chat widget on Listing and Directory pages.
+## AI ASSISTANT CHAT WIDGET (V1.9)
+- **Feature:** Floating chat widget on Listing, Directory, and Homepage.
 - **UI:** Built with `ChatWidget.astro`. Renders Markdown and uses a modern bubble layout.
 - **Listing Mode:** Reads ONLY the specific listing's data. If no answer, it tells the user to call the business's phone number.
 - **Directory Mode:** Reads ALL listings in the directory AND related directories (other categories in that location).
+- **Homepage Mode:** Reads ALL directories in the database to match natural language queries (e.g., "guest house" matches "Guesthouses").
 - **Firebase:** `BaseLayout.astro` loads Firebase SDK and initializes with the public API key.
 
 ## DYNAMIC FOOTER (V1.6)
@@ -65,12 +72,13 @@ The engine will **HIDE** any field if its value is:
 ## PRICE CATEGORIES
 Budget, Mid-range, Premium, Luxury — displayed on public pages. Exact numeric price optional.
 
-## VISUAL REFRESH (V1.5 - V1.8)
+## VISUAL REFRESH (V1.5 - V1.9)
 - Modern card design: white cards, box-shadow, 12px border-radius
 - Sticky header with white background and shadow
 - Dark navy footer with white text
 - Collapsible blog reviews, collapsible internal linking
 - Blue amenity pills, green price badges
+- **Homepage:** Clean, modern hero with AI search bar. Large directory grid removed for speed and discovery focus.
 
 ## JSON-LD SCHEMAS
 - Directory pages: LocalBusiness per listing, ItemList, FAQPage, BreadcrumbList
@@ -86,7 +94,7 @@ src/layouts/BaseLayout.astro — HTML shell, Firebase SDK init
 src/components/Header.astro — Sticky header
 src/components/Footer.astro — Dynamic footer
 src/components/LocationIntro.astro — Truncated location description with Read More toggle
-src/components/ChatWidget.astro — AI Assistant widget
+src/components/ChatWidget.astro — AI Assistant widget (Listing, Directory, Homepage modes)
 src/components/GlobalFaq.astro — Directory-level FAQ accordion (details/summary, no own heading — parent page renders the h2 and section#faq)
 src/components/ListingFaqs.astro — Listing-level FAQ accordion (same details/summary style)
 src/components/BlogArticle.astro — Renders the Gemini-generated blog article on listing/business pages
@@ -101,7 +109,7 @@ src/components/niches/HotelListing.astro — Per-niche card renderer (Hotel)
 src/components/niches/ApartmentListing.astro — Per-niche card renderer (Apartment)
 src/components/niches/SchoolListing.astro — Per-niche card renderer (School)
 src/components/niches/HealthListing.astro — Per-niche card renderer (Health)
-src/pages/index.astro — Homepage with collapsible Browse sections
+src/pages/index.astro — Homepage with AI search bar and collapsible Browse sections
 src/pages/about.astro — About page
 src/pages/privacy.astro — Privacy page
 src/pages/404.astro — Not found page
