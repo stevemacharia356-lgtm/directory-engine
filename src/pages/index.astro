@@ -3,6 +3,7 @@ import { getAllDirectorySlugs, getDirectoryData, getAllBusinessSlugs, getBusines
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import ChatWidget from '../components/ChatWidget.astro';
 
 const slugs = await getAllDirectorySlugs();
 
@@ -40,18 +41,6 @@ const locations = Array.from(byLocation.entries())
 const niches = Array.from(byNiche.entries())
   .sort((a, b) => a[0].localeCompare(b[0]))
   .map(([name, dirs]) => ({ name, dirs }));
-
-// Fetch published business pages
-const businessSlugs = await getAllBusinessSlugs();
-const businesses = [];
-for (const bizSlug of businessSlugs) {
-  const biz = await getBusinessData(bizSlug);
-  if (biz) businesses.push({ slug: bizSlug, ...biz });
-}
-
-// HOMEPAGE SCALABILITY: Only show a preview of top 8 on the homepage to avoid massive grids
-const previewDirectories = directories.slice(0, 8);
-const previewBusinesses = businesses.slice(0, 8);
 ---
 
 <BaseLayout
@@ -60,29 +49,29 @@ const previewBusinesses = businesses.slice(0, 8);
 >
   <Header breadcrumbs={[{ label: 'Home' }]} />
   
-  <main style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 4rem 1.5rem;">
+  <main style="max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 4rem 1.5rem;">
     
-    {/* MODERN HERO & AI DISCOVERY HUB */}
-    <section style="text-align: center; padding: 5rem 1rem 4rem 1rem; background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%); border-radius: 0 0 24px 24px; margin-bottom: 3rem;">
-      <h1 style="font-size: 2.8rem; font-weight: 800; color: #003d80; margin-bottom: 1rem; line-height: 1.2; letter-spacing: -0.5px;">
+    {/* COMPACT HERO SECTION */}
+    <section style="text-align: center; padding: 3rem 0 2.5rem 0; margin-bottom: 2rem; border-bottom: 1px solid #eee;">
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: #003d80; margin-bottom: 0.75rem; line-height: 1.2; letter-spacing: -0.5px;">
         Find Trusted Businesses Across Kenya
       </h1>
-      <p style="font-size: 1.15rem; color: #555; max-width: 600px; margin: 0 auto 2.5rem auto; line-height: 1.6;">
-        Thousands of listings at your fingertips. Use our AI assistant to instantly find exactly what you need.
+      <p style="font-size: 1.05rem; color: #555; max-width: 600px; margin: 0 auto 2rem auto; line-height: 1.5;">
+        Instantly search thousands of listings using our AI, or browse by location below.
       </p>
 
       {/* AI GLOBAL SEARCH BAR */}
-      <div style="max-width: 700px; margin: 0 auto; position: relative; display: flex; align-items: center; background: #fff; border-radius: 50px; padding: 0.6rem 0.6rem 0.6rem 1.5rem; box-shadow: 0 10px 40px rgba(0, 61, 128, 0.15); border: 1px solid #e0e6ff;">
-        <span style="font-size: 1.5rem; margin-right: 0.75rem;">✨</span>
+      <div style="max-width: 650px; margin: 0 auto; position: relative; display: flex; align-items: center; background: #fff; border-radius: 50px; padding: 0.4rem 0.4rem 0.4rem 1.25rem; box-shadow: 0 4px 20px rgba(0, 61, 128, 0.1); border: 1px solid #e0e6ff;">
+        <span style="font-size: 1.3rem; margin-right: 0.5rem;">✨</span>
         <input 
           type="text" 
           id="global-ai-input" 
           placeholder="Ask AI: 'Where can I get a cheap guesthouse in Hindi?'" 
-          style="flex: 1; border: none; outline: none; font-size: 1.1rem; padding: 0.8rem 0; color: #333; background: transparent;" 
+          style="flex: 1; border: none; outline: none; font-size: 1rem; padding: 0.6rem 0; color: #333; background: transparent;" 
         />
         <button 
           id="global-ai-btn"
-          style="background: #0066cc; color: white; border: none; border-radius: 40px; padding: 0.9rem 1.8rem; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; white-space: nowrap;"
+          style="background: #0066cc; color: white; border: none; border-radius: 40px; padding: 0.7rem 1.4rem; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; white-space: nowrap;"
           onmouseover="this.style.background='#0052a3'" 
           onmouseout="this.style.background='#0066cc'"
         >
@@ -91,29 +80,29 @@ const previewBusinesses = businesses.slice(0, 8);
       </div>
     </section>
 
-    {/* COLLAPSIBLE: Browse by Location & Category (Rule: Discovery Controls) */}
+    {/* MANUAL BROWSE ACCORDION (Always Open by Default) */}
     {(locations.length > 0 || niches.length > 0) && (
-      <details style="background:white; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); margin-bottom:4rem; overflow:hidden; border:1px solid #e0e0e0;">
-        <summary style="padding:1.5rem; font-size:1.2rem; font-weight:700; color:#003d80; cursor:pointer; background:#fff; list-style:none; display:flex; align-items:center; gap:0.5rem; border-bottom:1px solid transparent;">
-          🌐 Or Browse Manually by Location & Category
-          <span style="font-size:0.9rem; color:#666; font-weight:400; margin-left:auto; background:#f0f4ff; padding:0.4rem 0.8rem; border-radius:20px;">Tap to expand ↓</span>
+      <details open style="background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:3rem; overflow:hidden; border:1px solid #e0e0e0;">
+        <summary style="padding:1.25rem; font-size:1.1rem; font-weight:700; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
+          🌐 Browse Directory by Location or Category
         </summary>
         
-        <div style="padding:2rem; background:#fafafa; border-top:1px solid #eee;">
-          {/* ... (Location and Category rendering stays the same as before) ... */}
+        <div style="padding:1.5rem; background:#fff;">
+          
+          {/* Browse by Location */}
           {locations.length > 0 && (
-            <section style="margin-bottom:2.5rem;">
-              <h2 style="font-size:1.3rem; margin-top:0; color:#111;">🗺️ Browse by Location</h2>
-              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; margin-top:1.5rem;">
-                {locations.slice(0, 6).map((loc: any) => ( /* LIMITED TO 6 FOR CLEANLINESS */
-                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:12px; padding:1.5rem; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-                    <h3 style="margin:0 0 1rem 0; font-size:1.1rem; color:#003d80; display:flex; align-items:center; gap:0.5rem;">📍 {loc.name}</h3>
-                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem;">
+            <section style="margin-bottom:2rem;">
+              <h2 style="font-size:1.2rem; margin-top:0; color:#111; margin-bottom:1rem;">📍 Browse by Location</h2>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+                {locations.map((loc: any) => (
+                  <div style="background:#fafafa; border:1px solid #e0e0e0; border-radius:8px; padding:1rem;">
+                    <h3 style="margin:0 0 0.75rem 0; font-size:1rem; color:#003d80; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">📍 {loc.name}</h3>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
                       {loc.dirs.map((dir: any) => (
                         <li>
-                          <a href={`/${dir.directory}/`} style="color:#333; text-decoration:none; font-size:0.95rem; display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0.75rem; border-radius:8px; background:#f8f9ff; transition:background 0.2s;" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='#f8f9ff'">
-                            <span style="font-weight:500;">{dir.nicheDisplay}</span>
-                            <span style="color:#0066cc; font-size:0.85rem; font-weight:600; background:#fff; padding:0.2rem 0.6rem; border-radius:12px; border:1px solid #cce0ff;">{dir.listings.length} →</span>
+                          <a href={`/${dir.directory}/`} style="color:#333; text-decoration:none; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:0.3rem 0; transition:color 0.2s;" onmouseover="this.style.color='#0066cc'" onmouseout="this.style.color='#333'">
+                            <span>{dir.nicheDisplay}</span>
+                            <span style="color:#888; font-size:0.8rem; background:#eee; padding:0.1rem 0.4rem; border-radius:10px;">{dir.listings.length}</span>
                           </a>
                         </li>
                       ))}
@@ -123,19 +112,21 @@ const previewBusinesses = businesses.slice(0, 8);
               </div>
             </section>
           )}
+
+          {/* Browse by Category */}
           {niches.length > 0 && (
             <section>
-              <h2 style="font-size:1.3rem; margin-top:0; color:#111;">🏢 Browse by Category</h2>
-              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; margin-top:1.5rem;">
-                {niches.slice(0, 6).map((n: any) => ( /* LIMITED TO 6 FOR CLEANLINESS */
-                  <div style="background:#fff; border:1px solid #e0e0e0; border-radius:12px; padding:1.5rem; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-                    <h3 style="margin:0 0 1rem 0; font-size:1.1rem; color:#1a7a3a; display:flex; align-items:center; gap:0.5rem;">🏢 {n.name}</h3>
-                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem;">
+              <h2 style="font-size:1.2rem; margin-top:0; color:#111; margin-bottom:1rem;">🏢 Browse by Category</h2>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+                {niches.map((n: any) => (
+                  <div style="background:#fafafa; border:1px solid #e0e0e0; border-radius:8px; padding:1rem;">
+                    <h3 style="margin:0 0 0.75rem 0; font-size:1rem; color:#1a7a3a; border-bottom:1px solid #ddd; padding-bottom:0.5rem;">🏢 {n.name}</h3>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
                       {n.dirs.map((dir: any) => (
                         <li>
-                          <a href={`/${dir.directory}/`} style="color:#333; text-decoration:none; font-size:0.95rem; display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0.75rem; border-radius:8px; background:#f7fff9; transition:background 0.2s;" onmouseover="this.style.background='#edfff2'" onmouseout="this.style.background='#f7fff9'">
-                            <span style="font-weight:500;">{dir.nicheDisplay} in {dir.locationDisplay}</span>
-                            <span style="color:#1a7a3a; font-size:0.85rem; font-weight:600; background:#fff; padding:0.2rem 0.6rem; border-radius:12px; border:1px solid #b3e6c3;">{dir.listings.length} →</span>
+                          <a href={`/${dir.directory}/`} style="color:#333; text-decoration:none; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:0.3rem 0; transition:color 0.2s;" onmouseover="this.style.color='#1a7a3a'" onmouseout="this.style.color='#333'">
+                            <span>{dir.nicheDisplay} in {dir.locationDisplay}</span>
+                            <span style="color:#888; font-size:0.8rem; background:#eee; padding:0.1rem 0.4rem; border-radius:10px;">{dir.listings.length}</span>
                           </a>
                         </li>
                       ))}
@@ -149,73 +140,12 @@ const previewBusinesses = businesses.slice(0, 8);
       </details>
     )}
 
-    {/* DIRECTORY PREVIEW GRID (Scalable) */}
-    <section style="margin-bottom: 4rem;">
-      <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1.5rem;">
-        <h2 style="font-size: 1.8rem; font-weight: 800; color: #111; margin: 0;">📍 Recently Added Directories</h2>
-        <a href="/browse-directories" style="color:#0066cc; font-weight:600; text-decoration:none; font-size:0.95rem;">View All →</a>
-      </div>
-      
-      {previewDirectories.length === 0 ? (
-        <p style="color:#666; font-size:1.1rem; padding:2rem; background:#fafafa; border-radius:12px; text-align:center;">No directories available yet. Check back soon.</p>
-      ) : (
-        <ul style="list-style:none; padding:0; display:grid; gap:1.5rem; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); margin:0;">
-          {previewDirectories.map(dir => (
-            <li style="background:#fff; border:1px solid #eee; border-radius:16px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.04); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.04)'">
-              <a href={`/${dir!.directory}/`} style="text-decoration:none; color:inherit; display:block;">
-                <div style="position:relative;">
-                  <img src={dir!.heroImage} alt={dir!.heroImageAlt} width="400" height="200" loading="lazy" style="width:100%; height:200px; object-fit:cover;" />
-                  <span style="position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,0.95); padding:0.4rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700; color:#0066cc; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-                    {dir!.listings.length} Places
-                  </span>
-                </div>
-                <div style="padding:1.25rem;">
-                  <h3 style="font-size:1.2rem; font-weight:700; margin:0 0 0.5rem 0; color:#111; line-height:1.3;">{dir!.nicheDisplay} in {dir!.locationDisplay}</h3>
-                  <p style="margin:0; color:#666; font-size:0.95rem; display:flex; align-items:center; gap:0.25rem;">
-                    View listings, compare prices & contact details →
-                  </p>
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-
-    {/* FEATURED BUSINESSES PREVIEW GRID (Scalable) */}
-    <section>
-      <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1.5rem;">
-        <h2 style="font-size: 1.8rem; font-weight: 800; color: #111; margin: 0;">🏢 Featured Businesses</h2>
-        <a href="/browse-businesses" style="color:#0066cc; font-weight:600; text-decoration:none; font-size:0.95rem;">View All →</a>
-      </div>
-      
-      {previewBusinesses.length === 0 ? (
-        <p style="color:#666; font-size:1.1rem; padding:2rem; background:#fafafa; border-radius:12px; text-align:center;">No featured businesses yet. Check back soon.</p>
-      ) : (
-        <ul style="list-style:none; padding:0; display:grid; gap:1.5rem; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); margin:0;">
-          {previewBusinesses.map(biz => (
-            <li style="background:#fff; border:1px solid #eee; border-radius:16px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.04); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.04)'">
-              <a href={`/business/${biz.slug}/`} style="text-decoration:none; color:inherit; display:block;">
-                {biz.heroImage ? (
-                  <img src={biz.heroImage} alt={biz.heroImageAlt || biz.name} width="400" height="200" loading="lazy" style="width:100%; height:200px; object-fit:cover;" />
-                ) : (
-                  <div style="width:100%; height:200px; background:#f8f9ff; display:flex; align-items:center; justify-content:center; color:#a0b3d6; font-weight:600;">No Image Provided</div>
-                )}
-                <div style="padding:1.25rem;">
-                  <h3 style="font-size:1.2rem; font-weight:700; margin:0 0 0.25rem 0; color:#111; line-height:1.3;">{biz.name}</h3>
-                  <p style="margin:0 0 0.5rem 0; color:#0066cc; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:0.25rem;">📍 {biz.location}</p>
-                  {biz.tagline && <p style="margin:0; color:#666; font-size:0.9rem; line-height:1.4;">{biz.tagline}</p>}
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-
   </main>
 
   <Footer />
+
+  {/* THE CHAT WIDGET IS NOW INCLUDED ON THE HOMEPAGE */}
+  <ChatWidget mode="homepage" />
 
   {/* SCRIPT TO WIRE UP HOMEPAGE AI SEARCH TO WIDGET */}
   <script>
