@@ -1,0 +1,40 @@
+[33m6a18100[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix FAQ UX: remove duplicate header, add collapsible progressive disclosure
+[33me3bbb98[m ui: tighten directory page spacing
+[33mbf2f9ff[m ui: bigger visible chat button on mobile
+[33ma8820c6[m fix: remove global details margin to tighten spacing
+[33mb60f4a9[m ui: tighten listing page spacing and add on this page menu
+[33mbba82c7[m ui: tighten global spacing for professional look
+[33m94e69d4[m fix: read more summary toggle, modern gallery, modern blog emoji
+[33m73988f0[m ui: make table of contents a modern collapsible menu
+[33m2319522[m fix: location description bug and move table of contents to top
+[33m2e1cc75[m docs: update ENGINE-KNOWLEDGE.md to V1.8 with AI Layout Engine
+[33m8aa35f0[m ui: custom read more toggle for business summary
+[33m93c6341[m ui: custom read more toggle for location description
+[33mc52bed6[m ui: add progressive disclosure to summary and location description
+[33m7acf85e[m feat: dynamic listing page renderer using AI layout
+[33m4d612a2[m ui: make original 5 niche cards compact to match UX rules
+[33m9f47ebc[m feat: render AI-generated compact cards for custom niches
+[33m30bbb99[m feat: add NicheLayout interface and load layout from Firestore
+[33mf773a89[m feat: pass related directories to AI chat for cross-category recommendations
+[33m498bfb6[m fix: render welcome message HTML properly in astro template
+[33mdd7a490[m fix: update chat welcome message with Kedirectory branding
+[33m7b260b7[m docs: update ENGINE-KNOWLEDGE.md to V1.7 with AI Assistant details
+[33mbfabd51[m ui: fix chat widget layout and make bubbles distinct
+[33m1014882[m ui: update chat widget design and format markdown text
+[33m4c104cf[m fix: load firebase correctly and add api key
+[33m8994b49[m feat: add AI chat widget to directory pages
+[33m057b9f6[m feat: add AI chat widget to listing pages
+[33m5305c76[m ui: make directory page internal linking collapsible
+[33m18628ab[m ui: make homepage browse sections collapsible
+[33md11146d[m ui: make internal linking collapsible on business pages
+[33m3b7ad87[m ui: make internal linking collapsible on listing pages
+[33m347f2e9[m security: fix gitignore to properly ignore serviceAccount.json
+[33m1a6a877[m feat: hide helpline phone number from HTML using base64
+[33m5f7a492[m feat: show listing contact in footer on listing pages
+[33mcad482b[m feat: dynamic footer showing business contacts on business pages and helpline modal elsewhere
+[33mf3869ea[m docs: update ENGINE-KNOWLEDGE.md to V1.6
+[33m008100c[m fix: hide false, empty, and 'Other' values in custom niche details
+[33m2906d31[m feat: add related business internal linking sections
+[33m8d6fe00[m feat: add browse by location and category sections to homepage
+[33m6e4dedc[m fix: destructure nicheDisplay and locationDisplay from directoryData
+[33m8decfda[m feat: add internal linking sections to listing pages
