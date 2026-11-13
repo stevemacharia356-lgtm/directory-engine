@@ -59,6 +59,14 @@ const sameLocation = relatedData?.sameLocation || [];
 const geoCoords = listings[0]?.coordinates;
 const geoPlacename = `${locationDisplay}, Kenya`;
 
+// Helper to force old URLs on internal links
+const getLiveUrl = (slug: string) => {
+  if (slug === 'guesthouse-hindi') return 'guesthouse-premium-hindi';
+  if (slug === 'health-hindi') return 'health-private-hindi';
+  if (slug === 'guesthouse-mpeketoni') return 'guesthouse-premium-mpeketoni';
+  return slug;
+};
+
 const tocSections = [
   { id: 'listings', label: `${nicheDisplay} in ${locationDisplay}` },
   ...listings.map((l: any, idx: number) => ({ id: l.slug, label: `${idx + 1}. ${l.name}` })),
@@ -81,14 +89,14 @@ if (directoryData.globalFaqs?.length) {
   schemas.push(generateFAQPageSchema(directoryData.globalFaqs));
 }
 
-schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${directoryData.directory}/`));
+schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${getLiveUrl(directoryData.directory)}/`));
 ---
 
 <BaseLayout
   title={pageTitle}
   description={pageDescription}
   ogImage={directoryData.heroImage}
-  canonicalURL={`${Astro.url.origin}/${directoryData.directory}/`}
+  canonicalURL={`${Astro.url.origin}/${getLiveUrl(directoryData.directory)}/`}
   lastModified={directoryData.lastModified}
   geoCoordinates={geoCoords}
   geoPlacename={geoPlacename}
@@ -191,7 +199,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
               <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
             </div>
 
-            <a href={`/${directoryData.directory}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.6rem 1.25rem; background:#0066cc; color:white; text-decoration:none; border-radius:8px; font-weight:600; font-size:0.95rem;">
+            <a href={`/${getLiveUrl(directoryData.directory)}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.6rem 1.25rem; background:#0066cc; color:white; text-decoration:none; border-radius:8px; font-weight:600; font-size:0.95rem;">
               See Full Details →
             </a>
           </div>
@@ -221,7 +229,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
               <p style="color:#555; margin:0.5rem 0 0.75rem 0;">Explore {nicheDisplay.toLowerCase()} in other Kenyan towns and cities.</p>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
                 {sameNiche.map((dir: any) => (
-                  <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
+                  <a href={`/${getLiveUrl(dir.directory)}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
                     📍 {dir.nicheDisplay} in {dir.locationDisplay}
                     <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
                       {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
@@ -238,7 +246,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
               <p style="color:#555; margin:0.5rem 0 0.75rem 0;">Discover other services and businesses in {locationDisplay}.</p>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
                 {sameLocation.map((dir: any) => (
-                  <a href={`/${dir.directory}/`} style="display:block; padding:0.85rem 1rem; background:#f8fff8; border:1px solid #e0ffe0; color:#1a7a3a; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
+                  <a href={`/${getLiveUrl(dir.directory)}/`} style="display:block; padding:0.85rem 1rem; background:#f8fff8; border:1px solid #e0ffe0; color:#1a7a3a; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
                     🏢 {dir.nicheDisplay} in {dir.locationDisplay}
                     <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
                       {dir.listings?.length || 0} {(dir.listings?.length === 1) ? 'option' : 'options'}
