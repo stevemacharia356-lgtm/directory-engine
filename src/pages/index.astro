@@ -12,8 +12,7 @@ const limit = 10;
 for (let i = 0; i < slugs.length; i += limit) {
   const batch = slugs.slice(i, i + limit);
   const results = await Promise.all(batch.map(slug => getDirectoryData(slug)));
-  // ONLY include valid directories, and block the deleted 'guesthouse-hindi'
-  directories.push(...results.filter((dir: any) => dir && dir.directory !== 'guesthouse-hindi'));
+  directories.push(...results.filter(Boolean));
 }
 
 // Group directories by location
