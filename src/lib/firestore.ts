@@ -13,74 +13,16 @@ if (!getApps().length) {
 
 const db = getFirestore();
 
-export interface Photo {
-  src: string;
-  alt: string;
-}
+export interface Photo { src: string; alt: string; }
+export interface Faq { question: string; answer: string; }
+export interface Blog { title: string; slug: string; excerpt: string; body: string; bodyHtml?: string; lastModified: string; }
+export interface Coordinates { lat: number; lng: number; }
+export interface GuesthouseSpecific { rooms: number; checkIn: string; checkOut: string; amenities: string[]; }
+export interface HotelSpecific { rooms: number; starRating: number; checkIn: string; checkOut: string; amenities: string[]; }
+export interface ApartmentSpecific { apartmentType: string; monthlyRent: number; deposit: number; furnished: boolean; unitsAvailable: number; amenities: string[]; }
+export interface SchoolSpecific { schoolType: string; curriculum: string; studentCount: number; feesPerTerm: number; boarding: boolean; daySchool: boolean; facilities: string[]; }
+export interface HealthSpecific { facilityType: string; services: string[]; doctorCount: number; visitingHours: string; emergency: boolean; insuranceAccepted: string; }
 
-export interface Faq {
-  question: string;
-  answer: string;
-}
-
-export interface Blog {
-  title: string;
-  slug: string;
-  excerpt: string;
-  body: string;
-  bodyHtml?: string;
-  lastModified: string;
-}
-
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
-export interface GuesthouseSpecific {
-  rooms: number;
-  checkIn: string;
-  checkOut: string;
-  amenities: string[];
-}
-
-export interface HotelSpecific {
-  rooms: number;
-  starRating: number;
-  checkIn: string;
-  checkOut: string;
-  amenities: string[];
-}
-
-export interface ApartmentSpecific {
-  apartmentType: string;
-  monthlyRent: number;
-  deposit: number;
-  furnished: boolean;
-  unitsAvailable: number;
-  amenities: string[];
-}
-
-export interface SchoolSpecific {
-  schoolType: string;
-  curriculum: string;
-  studentCount: number;
-  feesPerTerm: number;
-  boarding: boolean;
-  daySchool: boolean;
-  facilities: string[];
-}
-
-export interface HealthSpecific {
-  facilityType: string;
-  services: string[];
-  doctorCount: number;
-  visitingHours: string;
-  emergency: boolean;
-  insuranceAccepted: string;
-}
-
-// Custom niche field definitions
 export interface NicheFieldDef {
   fieldName: string;
   label: string;
@@ -91,21 +33,12 @@ export interface NicheFieldDef {
   nicheSpecificKey: string;
 }
 
-// NEW: Niche Layout Interface
 export interface NicheLayout {
   directoryCard?: string[];
-  listingPage?: Array<{
-    section: string;
-    fields: string[];
-  }>;
+  listingPage?: Array<{ section: string; fields: string[]; }>;
 }
 
-export type NicheSpecific = 
-  | GuesthouseSpecific 
-  | HotelSpecific 
-  | ApartmentSpecific 
-  | SchoolSpecific 
-  | HealthSpecific;
+export type NicheSpecific = GuesthouseSpecific | HotelSpecific | ApartmentSpecific | SchoolSpecific | HealthSpecific;
 
 export interface Listing {
   id: string;
@@ -145,7 +78,7 @@ export interface DirectoryData {
   listings: Listing[];
   globalFaqs: Faq[];
   nicheFieldDefs?: NicheFieldDef[];
-  nicheLayout?: NicheLayout; // NEW
+  nicheLayout?: NicheLayout;
 }
 
 export interface BusinessData {
@@ -161,20 +94,14 @@ export interface BusinessData {
   coordinates?: Coordinates;
   heroImage?: string;
   heroImageAlt?: string;
-  blog?: {
-    title: string;
-    body: string;
-    bodyHtml?: string;
-    lastModified: string;
-  };
+  blog?: { title: string; body: string; bodyHtml?: string; lastModified: string; };
   status: string;
   lastEditedAt: string;
 }
 
-// Internal linking: related directories
 export interface RelatedDirectories {
-  sameNiche: DirectoryData[];      // Same niche, different locations
-  sameLocation: DirectoryData[];   // Same location, different niches
+  sameNiche: DirectoryData[];
+  sameLocation: DirectoryData[];
 }
 
 function sanitizeHtml(html: string): string {
@@ -198,17 +125,13 @@ function validateListing(listing: any, directorySlug: string): Listing | null {
   }
 }
 
-// Fetch niche field definitions AND layout from Firestore
 export async function getNicheFieldDefs(nicheSlug: string): Promise<{ fields: NicheFieldDef[], layout?: NicheLayout } | null> {
   try {
     const doc = await db.collection('nicheFields').doc(nicheSlug.toLowerCase()).get();
     if (!doc.exists) return null;
     const data = doc.data();
     if (!data || !data.fields) return null;
-    return { 
-      fields: data.fields as NicheFieldDef[],
-      layout: data.layout as NicheLayout | undefined
-    };
+    return { fields: data.fields as NicheFieldDef[], layout: data.layout as NicheLayout | undefined };
   } catch (error) {
     console.error(`Failed to fetch niche fields for ${nicheSlug}:`, error);
     return null;
@@ -217,49 +140,25 @@ export async function getNicheFieldDefs(nicheSlug: string): Promise<{ fields: Ni
 
 export async function getDirectoryData(directory: string): Promise<DirectoryData | null> {
   try {
-    // SEO FIX: Block the deleted 'guesthouse-hindi' from building
-    if (directory === 'guesthouse-hindi' || directory === 'health-hindi' || directory === 'guesthouse-mpeketoni') {
-      return null;
-    }
-
     const doc = await db.collection('directories').doc(directory).get();
     if (!doc.exists) return null;
-    
     const data = doc.data() as DirectoryData;
-    
     if (data.status !== 'published') return null;
-    
-    if (!data.listings || !Array.isArray(data.listings)) {
-      data.listings = [];
-    }
-    
-    data.listings = data.listings
-      .map(listing => validateListing(listing, directory))
-      .filter((listing): listing is Listing => listing !== null);
-    
+    if (!data.listings || !Array.isArray(data.listings)) { data.listings = []; }
+    data.listings = data.listings.map(listing => validateListing(listing, directory)).filter((listing): listing is Listing => listing !== null);
     if (data.listings.length === 0) return null;
-    
     for (const listing of data.listings) {
       if (listing.blog && listing.blog.body) {
         const rawHtml = marked.parse(listing.blog.body) as string;
         listing.blog.bodyHtml = sanitizeHtml(rawHtml);
       }
     }
-    
-    if (!data.globalFaqs || !Array.isArray(data.globalFaqs)) {
-      data.globalFaqs = [];
-    }
-
-    // Load niche field definitions for custom niches
+    if (!data.globalFaqs || !Array.isArray(data.globalFaqs)) { data.globalFaqs = []; }
     const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
     if (!knownNiches.includes(data.nicheSlug)) {
       const result = await getNicheFieldDefs(data.nicheSlug);
-      if (result) {
-        data.nicheFieldDefs = result.fields;
-        data.nicheLayout = result.layout;
-      }
+      if (result) { data.nicheFieldDefs = result.fields; data.nicheLayout = result.layout; }
     }
-    
     return data;
   } catch (error) {
     console.error(`Failed to fetch directory ${directory}: ${error}`);
@@ -269,15 +168,8 @@ export async function getDirectoryData(directory: string): Promise<DirectoryData
 
 export async function getAllDirectorySlugs(): Promise<string[]> {
   try {
-    const snapshot = await db.collection('directories')
-      .where('status', '==', 'published')
-      .select('directory')
-      .get();
-    
-    // Filter out the bad URLs so they never appear on the homepage
-    return snapshot.docs
-      .map(doc => doc.id)
-      .filter(slug => slug !== 'guesthouse-hindi' && slug !== 'health-hindi' && slug !== 'guesthouse-mpeketoni');
+    const snapshot = await db.collection('directories').where('status', '==', 'published').select('directory').get();
+    return snapshot.docs.map(doc => doc.id);
   } catch (error) {
     console.error('Failed to fetch directory slugs:', error);
     return [];
@@ -290,13 +182,9 @@ export function formatPrice(numeric: number, suffix: string): string {
   return `KSh ${formatted}${suffix}`;
 }
 
-// Business page functions
 export async function getAllBusinessSlugs(): Promise<string[]> {
   try {
-    const snapshot = await db.collection('businesses')
-      .where('status', '==', 'published')
-      .select('name')
-      .get();
+    const snapshot = await db.collection('businesses').where('status', '==', 'published').select('name').get();
     return snapshot.docs.map(doc => doc.id);
   } catch (error) {
     console.error('Failed to fetch business slugs:', error);
@@ -310,12 +198,10 @@ export async function getBusinessData(business: string): Promise<BusinessData | 
     if (!doc.exists) return null;
     const data = doc.data() as BusinessData;
     if (data.status !== 'published') return null;
-    
     if (data.blog?.body) {
       const rawHtml = marked.parse(data.blog.body) as string;
       data.blog.bodyHtml = sanitizeHtml(rawHtml);
     }
-    
     return data;
   } catch (error) {
     console.error(`Failed to fetch business ${business}: ${error}`);
@@ -323,73 +209,26 @@ export async function getBusinessData(business: string): Promise<BusinessData | 
   }
 }
 
-// ============================================
-// INTERNAL LINKING: Get related directories
-// ============================================
-
-export async function getRelatedDirectories(
-  directorySlug: string,
-  options: { limit?: number } = {}
-): Promise<RelatedDirectories> {
+export async function getRelatedDirectories(directorySlug: string, options: { limit?: number } = {}): Promise<RelatedDirectories> {
   const limit = options.limit || 10;
-  
   try {
     const currentDoc = await db.collection('directories').doc(directorySlug).get();
-    if (!currentDoc.exists) {
-      return { sameNiche: [], sameLocation: [] };
-    }
-    
+    if (!currentDoc.exists) { return { sameNiche: [], sameLocation: [] }; }
     const current = currentDoc.data() as DirectoryData;
-    if (!current || !current.nicheSlug || !current.location) {
-      return { sameNiche: [], sameLocation: [] };
-    }
-    
-    const snapshot = await db.collection('directories')
-      .where('status', '==', 'published')
-      .select('directory', 'nicheSlug', 'nicheDisplay', 'location', 'locationDisplay', 'heroImage', 'heroImageAlt', 'listings')
-      .get();
-    
+    if (!current || !current.nicheSlug || !current.location) { return { sameNiche: [], sameLocation: [] }; }
+    const snapshot = await db.collection('directories').where('status', '==', 'published').select('directory', 'nicheSlug', 'nicheDisplay', 'location', 'locationDisplay', 'heroImage', 'heroImageAlt', 'listings').get();
     const sameNiche: DirectoryData[] = [];
     const sameLocation: DirectoryData[] = [];
-    
     for (const doc of snapshot.docs) {
-      // Skip the current one AND the bad URLs
       if (doc.id === directorySlug) continue;
-      if (doc.id === 'guesthouse-hindi' || doc.id === 'health-hindi' || doc.id === 'guesthouse-mpeketoni') continue;
-      
       const data = doc.data() as Partial<DirectoryData>;
       if (!data) continue;
-      
       const dirData: DirectoryData = {
-        directory: doc.id,
-        nicheSlug: data.nicheSlug || '',
-        nicheDisplay: data.nicheDisplay || '',
-        location: data.location || '',
-        locationDisplay: data.locationDisplay || '',
-        locationDescription: '',
-        heroImage: data.heroImage || '',
-        heroImageAlt: data.heroImageAlt || '',
-        heroImageStatus: '',
-        status: 'published',
-        lastModified: '',
-        lastEditedAt: '',
-        listings: data.listings || [],
-        globalFaqs: []
+        directory: doc.id, nicheSlug: data.nicheSlug || '', nicheDisplay: data.nicheDisplay || '', location: data.location || '', locationDisplay: data.locationDisplay || '', locationDescription: '', heroImage: data.heroImage || '', heroImageAlt: data.heroImageAlt || '', heroImageStatus: '', status: 'published', lastModified: '', lastEditedAt: '', listings: data.listings || [], globalFaqs: []
       };
-      
-      if (data.nicheSlug === current.nicheSlug && data.location !== current.location) {
-        if (sameNiche.length < limit) {
-          sameNiche.push(dirData);
-        }
-      }
-      
-      if (data.location === current.location && data.nicheSlug !== current.nicheSlug) {
-        if (sameLocation.length < limit) {
-          sameLocation.push(dirData);
-        }
-      }
+      if (data.nicheSlug === current.nicheSlug && data.location !== current.location) { if (sameNiche.length < limit) { sameNiche.push(dirData); } }
+      if (data.location === current.location && data.nicheSlug !== current.nicheSlug) { if (sameLocation.length < limit) { sameLocation.push(dirData); } }
     }
-    
     return { sameNiche, sameLocation };
   } catch (error) {
     console.error(`Failed to get related directories for ${directorySlug}:`, error);
