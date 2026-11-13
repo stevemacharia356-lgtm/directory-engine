@@ -217,6 +217,11 @@ export async function getNicheFieldDefs(nicheSlug: string): Promise<{ fields: Ni
 
 export async function getDirectoryData(directory: string): Promise<DirectoryData | null> {
   try {
+    // SEO FIX: Block the deleted 'guesthouse-hindi' from building
+    if (directory === 'guesthouse-hindi' || directory === 'health-hindi' || directory === 'guesthouse-mpeketoni') {
+      return null;
+    }
+
     const doc = await db.collection('directories').doc(directory).get();
     if (!doc.exists) return null;
     
@@ -269,7 +274,10 @@ export async function getAllDirectorySlugs(): Promise<string[]> {
       .select('directory')
       .get();
     
-    return snapshot.docs.map(doc => doc.id);
+    // Filter out the bad URLs so they never appear on the homepage
+    return snapshot.docs
+      .map(doc => doc.id)
+      .filter(slug => slug !== 'guesthouse-hindi' && slug !== 'health-hindi' && slug !== 'guesthouse-mpeketoni');
   } catch (error) {
     console.error('Failed to fetch directory slugs:', error);
     return [];
@@ -345,7 +353,9 @@ export async function getRelatedDirectories(
     const sameLocation: DirectoryData[] = [];
     
     for (const doc of snapshot.docs) {
+      // Skip the current one AND the bad URLs
       if (doc.id === directorySlug) continue;
+      if (doc.id === 'guesthouse-hindi' || doc.id === 'health-hindi' || doc.id === 'guesthouse-mpeketoni') continue;
       
       const data = doc.data() as Partial<DirectoryData>;
       if (!data) continue;
