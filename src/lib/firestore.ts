@@ -142,33 +142,60 @@ export async function getDirectoryData(directory: string): Promise<DirectoryData
   try {
     const doc = await db.collection('directories').doc(directory).get();
     if (!doc.exists) return null;
+    
     const data = doc.data() as DirectoryData;
+    
+    if (!data || !data.directory || !data.nicheSlug) {
+      console.warn(`Skipping broken/empty document in Firestore: ${directory}`);
+      return null;
+    }
+    
     if (data.status !== 'published') return null;
-    if (!data.listings || !Array.isArray(data.listings)) { data.listings = []; }
-    data.listings = data.listings.map(listing => validateListing(listing, directory)).filter((listing): listing is Listing => listing !== null);
+    
+    if (!data.listings || !Array.isArray(data.listings)) {
+      data.listings = [];
+    }
+    
+    data.listings = data.listings
+      .map(listing => validateListing(listing, directory))
+      .filter((listing): listing is Listing => listing !== null);
+    
     if (data.listings.length === 0) return null;
+    
     for (const listing of data.listings) {
       if (listing.blog && listing.blog.body) {
         const rawHtml = marked.parse(listing.blog.body) as string;
         listing.blog.bodyHtml = sanitizeHtml(rawHtml);
       }
     }
-    if (!data.globalFaqs || !Array.isArray(data.globalFaqs)) { data.globalFaqs = []; }
+    
+    if (!data.globalFaqs || !Array.isArray(data.globalFaqs)) {
+      data.globalFaqs = [];
+    }
+
     const knownNiches = ['guesthouse', 'hotel', 'apartment', 'school', 'health'];
     if (!knownNiches.includes(data.nicheSlug)) {
       const result = await getNicheFieldDefs(data.nicheSlug);
-      if (result) { data.nicheFieldDefs = result.fields; data.nicheLayout = result.layout; }
+      if (result) {
+        data.nicheFieldDefs = result.fields;
+        data.nicheLayout = result.layout;
+      }
     }
+    
     return data;
   } catch (error) {
-    console.error(`Failed to fetch directory ${directory}: ${error}`);
+    console.warn(`Failed to fetch directory ${directory}, skipping.`, error);
     return null;
   }
 }
 
 export async function getAllDirectorySlugs(): Promise<string[]> {
   try {
-    const snapshot = await db.collection('directories').where('status', '==', 'published').select('directory').get();
+    const snapshot = await db.collection('directories')
+      .where('status', '==', 'published')
+      .select('directory')
+      .get();
+    
     return snapshot.docs.map(doc => doc.id);
   } catch (error) {
     console.error('Failed to fetch directory slugs:', error);
@@ -197,6 +224,7 @@ export async function getBusinessData(business: string): Promise<BusinessData | 
     const doc = await db.collection('businesses').doc(business).get();
     if (!doc.exists) return null;
     const data = doc.data() as BusinessData;
+    if (!data || !data.name) return null;
     if (data.status !== 'published') return null;
     if (data.blog?.body) {
       const rawHtml = marked.parse(data.blog.body) as string;
@@ -204,7 +232,7 @@ export async function getBusinessData(business: string): Promise<BusinessData | 
     }
     return data;
   } catch (error) {
-    console.error(`Failed to fetch business ${business}: ${error}`);
+    console.warn(`Failed to fetch business ${business}, skipping.`, error);
     return null;
   }
 }
@@ -216,13 +244,18 @@ export async function getRelatedDirectories(directorySlug: string, options: { li
     if (!currentDoc.exists) { return { sameNiche: [], sameLocation: [] }; }
     const current = currentDoc.data() as DirectoryData;
     if (!current || !current.nicheSlug || !current.location) { return { sameNiche: [], sameLocation: [] }; }
+    
     const snapshot = await db.collection('directories').where('status', '==', 'published').select('directory', 'nicheSlug', 'nicheDisplay', 'location', 'locationDisplay', 'heroImage', 'heroImageAlt', 'listings').get();
     const sameNiche: DirectoryData[] = [];
     const sameLocation: DirectoryData[] = [];
+    
     for (const doc of snapshot.docs) {
       if (doc.id === directorySlug) continue;
       const data = doc.data() as Partial<DirectoryData>;
       if (!data) continue;
+      
+      if (!data.nicheSlug || !data.location) continue;
+
       const dirData: DirectoryData = {
         directory: doc.id, nicheSlug: data.nicheSlug || '', nicheDisplay: data.nicheDisplay || '', location: data.location || '', locationDisplay: data.locationDisplay || '', locationDescription: '', heroImage: data.heroImage || '', heroImageAlt: data.heroImageAlt || '', heroImageStatus: '', status: 'published', lastModified: '', lastEditedAt: '', listings: data.listings || [], globalFaqs: []
       };
