@@ -40,7 +40,7 @@ export async function getStaticPaths() {
         }
         paths.push({ 
           params: { directory: dirSlug }, 
-          props: { directoryData: data, relatedData } 
+          props: { directoryData: data, relatedData, currentSlug: dirSlug } 
         });
       }
     }
@@ -49,7 +49,7 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { directoryData, relatedData } = Astro.props;
+const { directoryData, relatedData, currentSlug } = Astro.props;
 const { nicheSlug, listings, locationDisplay, nicheDisplay, nicheLayout } = directoryData;
 const config = getDirectoryConfig(directoryData.directory);
 
@@ -70,25 +70,25 @@ const pageDescription = `Compare all ${listings.length} ${nicheDisplay.toLowerCa
 
 const schemas: any[] = [];
 listings.forEach((listing: any) => {
-  if (nicheSlug === 'guesthouse') schemas.push(generateLocalBusinessSchema(listing, directoryData.directory));
-  else if (nicheSlug === 'hotel') schemas.push(generateHotelSchema(listing, directoryData.directory));
-  else if (nicheSlug === 'apartment') schemas.push(generateApartmentSchema(listing, directoryData.directory));
-  else if (nicheSlug === 'school') schemas.push(generateSchoolSchema(listing, directoryData.directory));
-  else if (nicheSlug === 'health') schemas.push(generateMedicalSchema(listing, directoryData.directory));
+  if (nicheSlug === 'guesthouse') schemas.push(generateLocalBusinessSchema(listing, currentSlug));
+  else if (nicheSlug === 'hotel') schemas.push(generateHotelSchema(listing, currentSlug));
+  else if (nicheSlug === 'apartment') schemas.push(generateApartmentSchema(listing, currentSlug));
+  else if (nicheSlug === 'school') schemas.push(generateSchoolSchema(listing, currentSlug));
+  else if (nicheSlug === 'health') schemas.push(generateMedicalSchema(listing, currentSlug));
 });
 
 if (directoryData.globalFaqs?.length) {
   schemas.push(generateFAQPageSchema(directoryData.globalFaqs));
 }
 
-schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${directoryData.directory}/`));
+schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${currentSlug}/`));
 ---
 
 <BaseLayout
   title={pageTitle}
   description={pageDescription}
   ogImage={directoryData.heroImage}
-  canonicalURL={`${Astro.url.origin}/${directoryData.directory}/`}
+  canonicalURL={`${Astro.url.origin}/${currentSlug}/`}
   lastModified={directoryData.lastModified}
   geoCoordinates={geoCoords}
   geoPlacename={geoPlacename}
@@ -107,7 +107,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
   />
 
   <main>
-    {/* MOVED TO TOP: Table of Contents */}
     <TableOfContents sections={tocSections} />
 
     <LocationIntro 
@@ -134,7 +133,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
           <div id={listing.slug} style="background:white; border-radius:12px; padding:1.25rem; margin:1.25rem 0; box-shadow:0 2px 8px rgba(0,0,0,0.08); border:1px solid #f0f0f0; transition:box-shadow 0.2s;">
             
             {isCustomCard ? (
-              /* AI-DRIVEN CARD (Custom Niches) */
               <>
                 {cardFields.includes('thumbnail') && listing.thumbnail && (
                   <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="200" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:10px; width:100%; height:200px; object-fit:cover; margin-bottom:1rem;" />
@@ -162,7 +160,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
                 <p style="margin:0.5rem 0; color:#555; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{listing.summary}</p>
               </>
             ) : (
-              /* DEFAULT COMPACT CARD (Original 5 Niches) */
               <>
                 {listing.thumbnail && (
                   <img src={listing.thumbnail} alt={listing.thumbnailAlt} width="800" height="200" loading={idx === 0 ? 'eager' : 'lazy'} style="border-radius:10px; width:100%; height:200px; object-fit:cover; margin-bottom:1rem;" />
@@ -191,7 +188,7 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
               <WhatsAppButton number={listing.whatsapp} message={listing.whatsappMessage} />
             </div>
 
-            <a href={`/${directoryData.directory}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.6rem 1.25rem; background:#0066cc; color:white; text-decoration:none; border-radius:8px; font-weight:600; font-size:0.95rem;">
+            <a href={`/${currentSlug}/${listing.slug}/`} style="display:inline-block; margin-top:0.5rem; padding:0.6rem 1.25rem; background:#0066cc; color:white; text-decoration:none; border-radius:8px; font-weight:600; font-size:0.95rem;">
               See Full Details →
             </a>
           </div>
@@ -206,7 +203,6 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${direct
       </section>
     )}
 
-    {/* COLLAPSIBLE INTERNAL LINKING */}
     {(sameNiche.length > 0 || sameLocation.length > 0) && (
       <details style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:2rem 0; overflow:hidden; border:1px solid #e0e0e0;">
         <summary style="padding:1.25rem; font-size:1.15rem; font-weight:600; color:#003d80; cursor:pointer; background:#f8f9ff; list-style:none; display:flex; align-items:center; gap:0.5rem;">
