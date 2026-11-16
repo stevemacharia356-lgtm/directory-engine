@@ -26,7 +26,8 @@ export async function getStaticPaths() {
   
   for (const dirSlug of slugs) {
     const data = await getDirectoryData(dirSlug);
-    if (data && data.listings) {
+    // Strict safety check: ensure data exists AND has a directory/nicheSlug
+    if (data && data.directory && data.nicheSlug && data.listings) {
       let relatedData = { sameNiche: [], sameLocation: [] };
       try {
         relatedData = await getRelatedDirectories(dirSlug, { limit: 6 });
@@ -35,7 +36,10 @@ export async function getStaticPaths() {
       }
       
       for (const listing of data.listings) {
-        const otherListings = data.listings.filter((l: any) => l.slug !== listing.slug);
+        // Strict safety check: ensure listing is valid before pushing
+        if (!listing || !listing.slug) continue;
+        
+        const otherListings = data.listings.filter((l: any) => l && l.slug !== listing.slug);
         paths.push({
           params: { directory: dirSlug, slug: listing.slug },
           props: { directoryData: data, listing: listing, relatedData: relatedData, otherListings: otherListings }
@@ -93,9 +97,11 @@ const articleSchema = listing.blog?.title ? generateArticleSchema(listing, `${As
 
 const allPhotos: any[] = [];
 gallery.forEach((cat: any) => {
-  cat.photos.forEach((photo: any) => {
-    allPhotos.push({ src: photo.src, alt: photo.alt || cat.category, category: cat.category });
-  });
+  if (cat && cat.photos) {
+    cat.photos.forEach((photo: any) => {
+      allPhotos.push({ src: photo.src, alt: photo.alt || cat.category, category: cat.category });
+    });
+  }
 });
 
 // On This Page Menu

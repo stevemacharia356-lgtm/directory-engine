@@ -10,23 +10,14 @@ import { getAllBusinessSlugs, getBusinessData, getAllDirectorySlugs, getDirector
 
 export async function getStaticPaths() {
   const slugs = await getAllBusinessSlugs();
-  const allSlugs = await getAllBusinessSlugs();
-  
   const paths = [];
+  
   for (const slug of slugs) {
-    // Fetch all other businesses for related links
-    const otherBusinesses = [];
-    for (const otherSlug of allSlugs) {
-      if (otherSlug === slug) continue;
-      const otherBiz = await getBusinessData(otherSlug);
-      if (otherBiz) {
-        otherBusinesses.push({ slug: otherSlug, ...otherBiz });
-      }
-    }
+    // Strict safety check: ensure slug is valid
+    if (!slug) continue;
     
     paths.push({ 
-      params: { business: slug },
-      props: { otherBusinesses }
+      params: { business: slug }
     });
   }
   
@@ -34,11 +25,21 @@ export async function getStaticPaths() {
 }
 
 const { business } = Astro.params;
-const { otherBusinesses } = Astro.props;
 const data = await getBusinessData(business!);
 
 if (!data) {
   return Astro.redirect('/404');
+}
+
+// We fetch all other businesses at build time INSIDE the page, not in getStaticPaths
+const allSlugs = await getAllBusinessSlugs();
+const otherBusinesses = [];
+for (const otherSlug of allSlugs) {
+  if (otherSlug === business) continue;
+  const otherBiz = await getBusinessData(otherSlug);
+  if (otherBiz) {
+    otherBusinesses.push({ slug: otherSlug, ...otherBiz });
+  }
 }
 
 const isVerified = data.verified === true;
@@ -115,9 +116,11 @@ const articleSchema = data.blog?.title ? {
 
 const allPhotos: any[] = [];
 gallery.forEach((cat: any) => {
-  cat.photos.forEach((photo: any) => {
-    allPhotos.push({ src: photo.src, alt: photo.alt || cat.category, category: cat.category });
-  });
+  if (cat && cat.photos) {
+    cat.photos.forEach((photo: any) => {
+      allPhotos.push({ src: photo.src, alt: photo.alt || cat.category, category: cat.category });
+    });
+  }
 });
 ---
 

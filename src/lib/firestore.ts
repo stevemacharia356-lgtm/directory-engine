@@ -145,7 +145,7 @@ export async function getDirectoryData(directory: string): Promise<DirectoryData
     
     const data = doc.data() as DirectoryData;
     
-    // PROTECTION: If the document is broken (missing fields), skip it instead of crashing
+    // SAFETY NET: If the document is broken (missing fields), skip it instead of crashing the build
     if (!data || !data.directory || !data.nicheSlug) {
       console.warn(`Skipping broken/empty document in Firestore: ${directory}`);
       return null;

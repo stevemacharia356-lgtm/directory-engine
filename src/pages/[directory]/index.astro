@@ -30,7 +30,8 @@ export async function getStaticPaths() {
     const results = await Promise.all(batch.map(slug => getDirectoryData(slug)));
     for (let j = 0; j < results.length; j++) {
       const data = results[j];
-      if (data) {
+      // Strict safety check: ensure data exists AND has a directory/nicheSlug
+      if (data && data.directory && data.nicheSlug) {
         const dirSlug = slugs[i + j];
         let relatedData = { sameNiche: [], sameLocation: [] };
         try {
@@ -147,11 +148,11 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${curren
                 )}
                 
                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0;">
-                  {cardFields.filter(f => f !== 'thumbnail' && f !== 'name' && f !== 'priceCategory').map(field => {
+                  {cardFields.filter((f: string) => f !== 'thumbnail' && f !== 'name' && f !== 'priceCategory').map((field: string) => {
                     const val = listing.nicheSpecific?.[field];
                     if (!val) return null;
                     if (Array.isArray(val)) {
-                      return val.slice(0, 3).map(v => <span style="background:#f0f4ff; color:#003d80; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.8rem;">✓ {v}</span>);
+                      return val.slice(0, 3).map((v: string) => <span style="background:#f0f4ff; color:#003d80; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.8rem;">✓ {v}</span>);
                     }
                     return <span style="background:#f0f4ff; color:#003d80; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.8rem;">✓ {val}</span>;
                   })}
