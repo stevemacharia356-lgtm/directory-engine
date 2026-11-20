@@ -141,9 +141,9 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${curren
                 
                 <h3 style="margin:0 0 0.5rem 0; font-size:1.25rem; line-height:1.3;">{idx + 1}. {listing.name}</h3>
                 
-                {cardFields.includes('priceCategory') && (
+                {cardFields.includes('priceCategory') && listing.priceCategory && (
                   <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.25rem 0; background:#e8f4e8; display:inline-block; padding:0.25rem 0.75rem; border-radius:20px;">
-                    {listing.priceCategory || 'Price not listed'}
+                    {listing.priceCategory}
                   </p>
                 )}
                 
@@ -167,9 +167,12 @@ schemas.push(generateItemListSchema(directoryData, `${Astro.url.origin}/${curren
                 )}
                 
                 <h3 style="margin:0 0 0.5rem 0; font-size:1.25rem; line-height:1.3;">{idx + 1}. {listing.name}</h3>
-                <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.25rem 0; background:#e8f4e8; display:inline-block; padding:0.25rem 0.75rem; border-radius:20px;">
-                  {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
-                </p>
+                
+                {(listing.priceCategory || (listing.priceNumeric && listing.priceNumeric > 0)) && (
+                  <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.25rem 0; background:#e8f4e8; display:inline-block; padding:0.25rem 0.75rem; border-radius:20px;">
+                    {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}${config.priceSuffix}`}
+                  </p>
+                )}
                 
                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0;">
                   {(listing.nicheSpecific?.amenities || listing.nicheSpecific?.facilities || listing.nicheSpecific?.services || []).slice(0, 4).map((a: string) => (
