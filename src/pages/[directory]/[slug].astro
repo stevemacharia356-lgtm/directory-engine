@@ -26,6 +26,7 @@ export async function getStaticPaths() {
   
   for (const dirSlug of slugs) {
     const data = await getDirectoryData(dirSlug);
+    // Strict safety check: ensure data exists AND has a directory/nicheSlug
     if (data && data.directory && data.nicheSlug && data.listings) {
       let relatedData = { sameNiche: [], sameLocation: [] };
       try {
@@ -35,6 +36,7 @@ export async function getStaticPaths() {
       }
       
       for (const listing of data.listings) {
+        // Strict safety check: ensure listing is valid before pushing
         if (!listing || !listing.slug) continue;
         
         const otherListings = data.listings.filter((l: any) => l && l.slug !== listing.slug);
@@ -60,6 +62,7 @@ const sameNiche = relatedData?.sameNiche || [];
 const sameLocation = relatedData?.sameLocation || [];
 const siblingListings = otherListings || [];
 
+// Default layout (for original 5 niches or if AI layout is missing)
 const defaultLayout = {
   listingPage: [
     { section: "hero", fields: [] },
@@ -72,6 +75,7 @@ const defaultLayout = {
   ]
 };
 
+// Use AI layout if it exists, otherwise use default
 const layout = nicheLayout?.listingPage || defaultLayout.listingPage;
 
 const dirLabel = directoryData.categoryTag 
@@ -100,6 +104,7 @@ gallery.forEach((cat: any) => {
   }
 });
 
+// On This Page Menu
 const tocSections = [
   { id: 'hero', label: 'Overview' },
   { id: 'photos', label: 'Photos' },
@@ -109,6 +114,7 @@ const tocSections = [
   { id: 'deep_content', label: 'FAQs & Review' }
 ];
 
+// Helper function to format camelCase keys into readable text
 function formatLabel(str: string) {
   if (!str) return '';
   const result = str.replace(/([A-Z])/g, ' $1');
@@ -139,6 +145,7 @@ function formatLabel(str: string) {
   />
 
   <main>
+    {/* On This Page Menu */}
     <TableOfContents sections={tocSections} />
 
     {layout.map((section: any) => {
@@ -155,19 +162,11 @@ function formatLabel(str: string) {
                 {isVerified && <span style="background:#1a7a3a; color:white; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; margin-left:0.5rem; vertical-align:middle;">✓ Verified</span>}
               </h1>
               
-              {(() => {
-                const priceText = String(listing.priceCategory || '').trim();
-                const numPrice = Number(listing.priceNumeric);
-                const isValidText = priceText && priceText !== '0' && priceText !== 'null' && priceText !== 'undefined';
-                if (isValidText || numPrice > 0) {
-                  return (
-                    <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
-                      {isValidText ? priceText : `KSh ${numPrice.toLocaleString('en-KE')}`}
-                    </p>
-                  );
-                }
-                return null;
-              })()}
+              {(listing.priceCategory || (listing.priceNumeric && listing.priceNumeric > 0)) && (
+                <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
+                  {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}`}
+                </p>
+              )}
               
               {listing.summary && (
                 <div style="margin-top:0.75rem;">
@@ -244,6 +243,7 @@ function formatLabel(str: string) {
       if (section.section === 'decision_facts') {
         const fields = section.fields || [];
         
+        // Filter out booleans and empty arrays before checking if hasData
         const validFields = fields.filter((f: string) => {
           const v = niche?.[f];
           return v !== undefined && v !== null && v !== '' && typeof v !== 'boolean' && !(Array.isArray(v) && v.length === 0);
@@ -271,6 +271,7 @@ function formatLabel(str: string) {
       if (section.section === 'details_table') {
         const fields = section.fields || [];
         
+        // Filter out booleans and empty values
         const validFields = fields.filter((f: string) => {
           const v = niche?.[f];
           return v !== undefined && v !== null && v !== '' && typeof v !== 'boolean' && !(Array.isArray(v) && v.length === 0);
@@ -297,8 +298,9 @@ function formatLabel(str: string) {
               
               {validFields.map((fieldKey: string) => {
                 const value = niche[fieldKey];
-                if (Array.isArray(value)) return null;
+                if (Array.isArray(value)) return null; // Arrays are handled in Decision Facts
                 
+                // Format camelCase key into readable text (e.g. orderLeadTime -> Order Lead Time)
                 const displayLabel = formatLabel(fieldKey);
                 
                 return <p style="margin:0.35rem 0;"><strong>{displayLabel}:</strong> {value}</p>;
