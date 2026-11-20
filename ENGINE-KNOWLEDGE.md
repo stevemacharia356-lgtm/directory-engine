@@ -1,4 +1,4 @@
-# KNOWLEDGE.md — KEDIRECTORY ENGINE V1.9 (COMPLETE)
+# KNOWLEDGE.md — KEDIRECTORY ENGINE V1.9.1 (COMPLETE)
 
 ## PROJECT OVERVIEW
 Astro static site engine for Kenya Accommodation & Business Directory. Reads from Firestore, generates pages for unlimited business niches per location plus standalone business pages. Zero hardcoded content. Live at kedirectory.co.ke. Deployed via GitHub Actions to Firebase Hosting.
@@ -86,23 +86,28 @@ Budget, Mid-range, Premium, Luxury — displayed on public pages. Exact numeric 
 - Business pages: LocalBusiness, FAQPage, Article
 - All schemas include addressCountry: "KE"
 
+## DATA INTEGRITY & SEO (V1.9.1)
+- **URL/Data Sync Rule:** When changing a Firestore document ID (e.g., renaming a directory slug), you MUST also update the internal `directory` field inside the document data to match the new ID.
+- **Why:** Astro uses the internal `directory` field to generate links on the homepage and sitemap. If the document ID and internal field mismatch (e.g., ID is `guesthouse-premium-hindi` but the `directory` field is `guesthouse-hindi`), the build will generate broken 404 links.
+- **Ghost Documents:** Any directory with an empty `listings` array is considered a "ghost" and is safely skipped by the build process (`firestore.ts`) to prevent `JSON.parse` crashes.
+
 ## ALL FILES
 src/lib/registry.ts — Regex patterns per niche
-src/lib/firestore.ts — Firebase Admin, types, getRelatedDirectories(), loads nicheFieldDefs AND nicheLayout
+src/lib/firestore.ts — Firebase Admin, types, getRelatedDirectories(), loads nicheFieldDefs AND nicheLayout, strict data validation
 src/lib/schema.ts — JSON-LD generators
 src/layouts/BaseLayout.astro — HTML shell, Firebase SDK init
 src/components/Header.astro — Sticky header
 src/components/Footer.astro — Dynamic footer
 src/components/LocationIntro.astro — Truncated location description with Read More toggle
 src/components/ChatWidget.astro — AI Assistant widget (Listing, Directory, Homepage modes)
-src/components/GlobalFaq.astro — Directory-level FAQ accordion (details/summary, no own heading — parent page renders the h2 and section#faq)
-src/components/ListingFaqs.astro — Listing-level FAQ accordion (same details/summary style)
+src/components/GlobalFaq.astro — Directory-level FAQ accordion
+src/components/ListingFaqs.astro — Listing-level FAQ accordion
 src/components/BlogArticle.astro — Renders the Gemini-generated blog article on listing/business pages
 src/components/TableOfContents.astro — Collapsible "On this page" menu (anchors: #faq, etc.)
-src/components/MapFacade.astro — Lazy-loaded map facade (defers map load until user interaction)
+src/components/MapFacade.astro — Lazy-loaded map facade
 src/components/WrittenDirections.astro — Text directions block on listing pages
-src/components/PhoneButton.astro — Call button; locked for free listings, unlocked for verified/paid
-src/components/WhatsAppButton.astro — WhatsApp button; locked for free listings, unlocked for verified/paid
+src/components/PhoneButton.astro — Call button
+src/components/WhatsAppButton.astro — WhatsApp button
 src/components/niches/GenericListing.astro — Generic card for custom niches
 src/components/niches/GuesthouseListing.astro — Per-niche card renderer (Guesthouse)
 src/components/niches/HotelListing.astro — Per-niche card renderer (Hotel)
@@ -115,11 +120,11 @@ src/pages/privacy.astro — Privacy page
 src/pages/404.astro — Not found page
 src/pages/robots.txt.ts — Dynamic robots.txt endpoint
 src/pages/sitemap.xml.ts — Dynamic sitemap.xml endpoint
-src/pages/[directory]/index.astro — Directory page with compact AI-driven cards; owns <section id="faq"> and the ❓ heading for GlobalFaq
+src/pages/[directory]/index.astro — Directory page with compact AI-driven cards
 src/pages/[directory]/[slug].astro — Dynamic Listing page (loops through AI listingPage layout)
 src/pages/business/[business].astro — Business page with cross-linking
 astro.config.mjs — site: kedirectory.co.ke
-firebase.json — Hosting config
+firebase.json — Hosting config (no-cache HTML)
 .github/workflows/deploy.yml — CI/CD
 scripts/check-build.js — Build verification script
 AGENTS.md / CLAUDE.md — AI agent instruction files
@@ -144,4 +149,4 @@ FIREBASE_TOKEN
 
 ## CONTACT
 WhatsApp: 0741 986 556
-Email: stevemacharia356@gmail.com
+Email: stevehungi356@gmail.com
