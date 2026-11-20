@@ -161,9 +161,12 @@ function formatLabel(str: string) {
                 {listing.name}
                 {isVerified && <span style="background:#1a7a3a; color:white; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; margin-left:0.5rem; vertical-align:middle;">✓ Verified</span>}
               </h1>
-              <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
-                {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}`}
-              </p>
+              
+              {(listing.priceCategory || (listing.priceNumeric && listing.priceNumeric > 0)) && (
+                <p style="font-weight:bold; font-size:1.1rem; color:#1a7a3a; margin:0.5rem 0; background:#e8f4e8; display:inline-block; padding:0.3rem 0.9rem; border-radius:20px;">
+                  {listing.priceCategory || `KSh ${listing.priceNumeric?.toLocaleString('en-KE')}`}
+                </p>
+              )}
               
               {listing.summary && (
                 <div style="margin-top:0.75rem;">
@@ -372,9 +375,6 @@ function formatLabel(str: string) {
                 {siblingListings.slice(0, 6).map((other: any) => (
                   <a href={`/${directoryData.directory}/${other.slug}/`} style="display:block; padding:0.85rem 1rem; background:#f8f9ff; border:1px solid #e0e6ff; color:#003d80; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.95rem;">
                     🏠 {other.name}
-                    <div style="font-size:0.8rem; color:#666; font-weight:400; margin-top:0.25rem;">
-                      {other.priceCategory || `KSh ${other.priceNumeric?.toLocaleString('en-KE')}`}
-                    </div>
                   </a>
                 ))}
               </div>
